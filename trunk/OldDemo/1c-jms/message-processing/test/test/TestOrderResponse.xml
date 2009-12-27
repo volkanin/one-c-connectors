@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<order-response>
+    <contr-id>1</contr-id>
+    <order-id>1</order-id>
+    <status>1</status>
+    <comment>ЙЦУКЕН</comment>
+    <diff-positions>
+        <position code="1" count="10" price="50"/>
+        <position code="2" count="5" price="30"/>
+    </diff-positions>
+</order-response>

@@ -1,0 +1,237 @@
+<beans
+  xmlns="http://www.springframework.org/schema/beans"
+  xmlns:amq="http://activemq.apache.org/schema/core"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd   
+  http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- Allows us to use system properties as variables in this configuration file -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+         <property name="locations">
+            <value>file:${activemq.base}/conf/credentials.properties</value>
+         </property>      
+    </bean>
+
+    <broker xmlns="http://activemq.apache.org/schema/core" brokerName="localhost" dataDirectory="${activemq.base}/data">
+
+
+	<plugins>
+			 <authorizationPlugin>
+        			<map>
+          				<authorizationMap>
+            					<authorizationEntries>
+              						<authorizationEntry queue=">" read="admins,users" write="admins,users" admin="admins,users"/>              
+							<authorizationEntry topic="ActiveMQ.Advisory.>" read="guests,users" write="guests,users" admin="guests,users"/>
+            					</authorizationEntries>            
+         				</authorizationMap>
+        			</map>
+      			</authorizationPlugin>
+			<simpleAuthenticationPlugin>
+				<users>
+					<authenticationUser username="test" password="test" groups="users"/>
+					<authenticationUser username="system" password="manager" groups="admins,users"/>
+				</users>
+			</simpleAuthenticationPlugin>
+	</plugins>
+
+        <destinationPolicy>
+            <policyMap>
+                <policyEntries>
+                    <policyEntry queue=">" memoryLimit="5mb"/>
+                    <policyEntry topic=">" memoryLimit="5mb">
+                        <dispatchPolicy>
+                            <strictOrderDispatchPolicy/>
+                        </dispatchPolicy>
+                        <subscriptionRecoveryPolicy>
+                            <lastImageSubscriptionRecoveryPolicy/>
+                        </subscriptionRecoveryPolicy>
+                    </policyEntry>
+                </policyEntries>
+            </policyMap>
+        </destinationPolicy>
+
+        <managementContext>
+            <managementContext createConnector="false"/>
+        </managementContext>
+
+        <networkConnectors>
+            <!-- by default just auto discover the other brokers -->
+            <networkConnector name="default-nc" uri="multicast://default" userName="system" password="manager"/>
+            <networkConnector name="localhost" uri="static://(tcp://127.0.0.1:61616)" userName="system" password="manager"/>
+        </networkConnectors>
+
+        <persistenceAdapter>
+            <amqPersistenceAdapter syncOnWrite="false" directory="${activemq.base}/data" maxFileLength="20 mb"/>
+        </persistenceAdapter>
+
+        <sslContext>
+            <sslContext keyStore="file:${activemq.base}/conf/broker.ks" keyStorePassword="password" trustStore="file:${activemq.base}/conf/broker.ts" trustStorePassword="password"/>
+        </sslContext>
+
+        <systemUsage>
+            <systemUsage>
+                <memoryUsage>
+                    <memoryUsage limit="20 mb"/>
+                </memoryUsage>
+                <storeUsage>
+                    <storeUsage limit="1 gb" name="foo"/>
+                </storeUsage>
+                <tempUsage>
+                    <tempUsage limit="100 mb"/>
+                </tempUsage>
+            </systemUsage>
+        </systemUsage>
+
+        <transportConnectors>
+            <transportConnector name="openwire" uri="tcp://0.0.0.0:61616" discoveryUri="multicast://default" />
+            <transportConnector name="ssl" uri="ssl://0.0.0.0:61617" />
+            <transportConnector name="stomp" uri="stomp://0.0.0.0:61613" />
+            <transportConnector name="xmpp" uri="xmpp://0.0.0.0:61222" />
+        </transportConnectors>
+
+    </broker>
+
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+
+        <package>processing</package>
+
+        <route>
+            <from uri="activemq:test"/>
+            <multicast>
+        	<to uri="activemq:toStdOut"/>
+        	<to uri="activemq:toStdOut2"/>
+        	<to uri="activemq:routeError"/>
+    	    </multicast>
+        </route>
+
+	<!-- Contr1 inbound route -->
+	<route>
+		<from uri="activemq:contr1In"/>
+		<to uri="activemq:contr1InTransform"/>
+		<bean ref="contr1InProcessor" method="process"/>
+		<multicast>
+			<to uri="activemq:oneCIn"/>
+		</multicast>
+	</route>
+
+	<!-- Contr1 outbound route -->
+	<route>
+		<from uri="activemq:contr1OutTransform"/>
+		<bean ref="contr1OutProcessor" method="process"/>
+		<to uri="activemq:contr1Out"/>
+	</route>
+
+	<!-- OneC outbound route -->
+	<route>
+		<from uri="activemq:oneCOut"/>
+		<choice>
+            		<when>
+                		<xpath>//contr-id = '1'</xpath>
+	                	<to uri="activemq:contr1OutTransform"/>
+	       		 </when>
+			<otherwise>
+                		<to uri="activemq:routeError"/>
+            		</otherwise>
+		</choice>
+	</route>
+
+    </camelContext>
+
+    <bean id="contr1InProcessor" class="processing.XslProcessor">
+	<property name="xslName" value="PrepareRequest.xsl"/>
+	<property name="contrId" value="1"/>
+    </bean>
+
+    <bean id="contr1OutProcessor" class="processing.XslProcessor">
+	<property name="xslName" value="PrepareResponse.xsl"/>
+	<property name="contrId" value="1"/>
+    </bean>
+
+    <bean id="errorConsumerBean" class="processing.ErrorConsumer" lazy-init="false">
+	<property name="destinationDir" value="C:/Work/B2B/errors"/>
+    </bean>
+
+    <bean id="testBean" class="processing.Test" lazy-init="false"/>
+
+    <!-- configure the camel activemq component to use the current broker -->
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="connectionFactory">
+          <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+            <property name="brokerURL" value="vm://localhost?create=false&amp;waitForStart=10000" />
+            <property name="userName" value="system"/>
+            <property name="password" value="manager"/>
+          </bean>
+        </property>
+    </bean>
+
+
+    <!-- Uncomment to create a command agent to respond to message based admin commands on the ActiveMQ.Agent topic -->
+    <!--
+    <commandAgent xmlns="http://activemq.apache.org/schema/core" brokerUrl="vm://localhost" username="${activemq.username}" password="${activemq.password}"/>
+    -->
+
+
+    <!-- An embedded servlet engine for serving up the Admin console -->
+    <jetty xmlns="http://mortbay.com/schemas/jetty/1.0">
+        <connectors>
+            <nioConnector port="8161"/>
+        </connectors>
+
+        <handlers>
+            <webAppContext contextPath="/admin" resourceBase="${activemq.base}/webapps/admin" logUrlOnStart="true"/>
+            <webAppContext contextPath="/camel" resourceBase="${activemq.base}/webapps/camel" logUrlOnStart="true"/>
+            <webAppContext contextPath="/demo" resourceBase="${activemq.base}/webapps/demo" logUrlOnStart="true"/>
+            <webAppContext contextPath="/fileserver" resourceBase="${activemq.base}/webapps/fileserver" logUrlOnStart="true"/>
+        </handlers>
+    </jetty>
+
+    <!--  This xbean configuration file supports all the standard spring xml configuration options -->
+
+    <!-- Postgres DataSource Sample Setup -->
+    <!--
+    <bean id="postgres-ds" class="org.postgresql.ds.PGPoolingDataSource">
+      <property name="serverName" value="localhost"/>
+      <property name="databaseName" value="activemq"/>
+      <property name="portNumber" value="0"/>
+      <property name="user" value="activemq"/>
+      <property name="password" value="activemq"/>
+      <property name="dataSourceName" value="postgres"/>
+      <property name="initialConnections" value="1"/>
+      <property name="maxConnections" value="10"/>
+    </bean>
+    -->
+
+    <!-- MySql DataSource Sample Setup -->
+    <!--
+    <bean id="mysql-ds" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+      <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+      <property name="url" value="jdbc:mysql://localhost/activemq?relaxAutoCommit=true"/>
+      <property name="username" value="activemq"/>
+      <property name="password" value="activemq"/>
+      <property name="maxActive" value="200"/>
+      <property name="poolPreparedStatements" value="true"/>
+    </bean>
+    -->
+
+    <!-- Oracle DataSource Sample Setup -->
+    <!--
+    <bean id="oracle-ds" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+      <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+      <property name="url" value="jdbc:oracle:thin:@localhost:1521:AMQDB"/>
+      <property name="username" value="scott"/>
+      <property name="password" value="tiger"/>
+      <property name="maxActive" value="200"/>
+      <property name="poolPreparedStatements" value="true"/>
+    </bean>
+    -->
+
+    <!-- Embedded Derby DataSource Sample Setup -->
+    <!--
+    <bean id="derby-ds" class="org.apache.derby.jdbc.EmbeddedDataSource">
+      <property name="databaseName" value="derbydb"/>
+      <property name="createDatabase" value="create"/>
+    </bean>
+    -->
+
+</beans>

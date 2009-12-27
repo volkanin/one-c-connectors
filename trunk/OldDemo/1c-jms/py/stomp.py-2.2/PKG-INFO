@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: stomp.py
+Version: 2.2
+Summary: Stomp 
+Home-page: http://www.briggs.net.nz/log/projects/stomp.py
+Author: Jason R Briggs
+Author-email: jasonrbriggs@gmail.com
+License: Apache
+Description: UNKNOWN
+Platform: any
