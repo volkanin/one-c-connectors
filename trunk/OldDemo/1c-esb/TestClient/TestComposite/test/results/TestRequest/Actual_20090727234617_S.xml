@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <m:ExecuteRequestResponse xmlns:msgns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" xmlns:m="TestComposite">
+      <resultSet xmlns:a="http://onecservice/types" xmlns:msgns="http://onecservice" xmlns:ns0="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" xmlns="">
+        <a:ColumnNames xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+          <b:string>Ссылка</b:string>
+        </a:ColumnNames>
+        <a:ColumnTypes xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+          <b:string>object</b:string>
+        </a:ColumnTypes>
+        <a:Error/>
+        <a:Rows>
+          <a:Row>
+            <a:Values>
+              <value xmlns="">
+                <CatalogObject.Сотрудники xmlns="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <Ref>33268d79-7ad4-11de-b733-001167558f69</Ref>
+                  <DeletionMark>false</DeletionMark>
+                  <Code>1</Code>
+                  <Description>Иванов</Description>
+                </CatalogObject.Сотрудники>
+              </value>
+            </a:Values>
+          </a:Row>
+          <a:Row>
+            <a:Values>
+              <value xmlns="">
+                <CatalogObject.Сотрудники xmlns="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <Ref>33268d7a-7ad4-11de-b733-001167558f69</Ref>
+                  <DeletionMark>false</DeletionMark>
+                  <Code>3</Code>
+                  <Description>Петров</Description>
+                </CatalogObject.Сотрудники>
+              </value>
+            </a:Values>
+          </a:Row>
+          <a:Row>
+            <a:Values>
+              <value xmlns="">
+                <CatalogObject.Сотрудники xmlns="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                  <Ref>33268d7b-7ad4-11de-b733-001167558f69</Ref>
+                  <DeletionMark>false</DeletionMark>
+                  <Code>4</Code>
+                  <Description>Сидоров</Description>
+                </CatalogObject.Сотрудники>
+              </value>
+            </a:Values>
+          </a:Row>
+        </a:Rows>
+      </resultSet>
+    </m:ExecuteRequestResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

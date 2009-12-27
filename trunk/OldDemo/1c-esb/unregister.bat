@@ -1,0 +1,3 @@
+Sc.exe delete OneCService
+
+

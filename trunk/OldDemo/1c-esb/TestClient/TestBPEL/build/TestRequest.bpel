@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process
+    name="TestRequest"
+    targetNamespace="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequest"
+    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:sxt="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" 
+    xmlns:sxed="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor"
+    xmlns:sxat="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Attachment"
+    xmlns:sxeh="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/ErrorHandling"
+    xmlns:tns="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequest" xmlns:sxed2="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Editor2" xmlns:ns0="http://onecservice">
+    <import namespace="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" location="TestExecuteRequest.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://enterprise.netbeans.org/bpel/onecserviceWrapper" location="onecserviceWrapper.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://onecservice" location="onecservice.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <partnerLinks>
+        <partnerLink name="OneCLink" xmlns:tns="http://enterprise.netbeans.org/bpel/onecserviceWrapper" partnerLinkType="tns:onecserviceLinkType" partnerRole="onecserviceRole"/>
+        <partnerLink name="TestRequestLink" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" partnerLinkType="tns:TestExecuteRequest" myRole="TestExecuteRequestPortTypeRole"/>
+    </partnerLinks>
+    <variables>
+        <variable name="ExecuteRequestOut" xmlns:tns="http://onecservice" messageType="tns:onecservice_ExecuteRequest_OutputMessage"/>
+        <variable name="ExecuteRequestIn" xmlns:tns="http://onecservice" messageType="tns:onecservice_ExecuteRequest_InputMessage"/>
+        <variable name="resultSet" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" messageType="tns:ExecuteRequestResponse"/>
+        <variable name="request" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" messageType="tns:ExecuteRequestRequest"/>
+    </variables>
+    <sequence>
+        <receive name="Receive1" createInstance="yes" partnerLink="TestRequestLink" operation="ExecuteRequest" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" portType="tns:TestExecuteRequestPortType" variable="request"/>
+        <assign name="Assign1">
+            <copy>
+                <from variable="request" part="request"/>
+                <to>$ExecuteRequestIn.parameters/ns0:_request</to>
+            </copy>
+            <copy>
+                <from>'C:\Work\OneCService\OneC\First'</from>
+                <to>$ExecuteRequestIn.parameters/ns0:_file</to>
+            </copy>
+            <copy>
+                <from>''</from>
+                <to>$ExecuteRequestIn.parameters/ns0:_usr</to>
+            </copy>
+            <copy>
+                <from>''</from>
+                <to>$ExecuteRequestIn.parameters/ns0:_pwd</to>
+            </copy>
+        </assign>
+        <invoke name="InvokeOneC" partnerLink="OneCLink" operation="ExecuteRequest" xmlns:tns="http://onecservice" portType="tns:onecservice" inputVariable="ExecuteRequestIn" outputVariable="ExecuteRequestOut"/>
+        <assign name="Assign2">
+            <copy>
+                <from>$ExecuteRequestOut.parameters/ns0:ExecuteRequestResult</from>
+                <to variable="resultSet" part="resultSet"/>
+            </copy>
+        </assign>
+        <reply name="Reply1" partnerLink="TestRequestLink" operation="ExecuteRequest" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" portType="tns:TestExecuteRequestPortType" variable="resultSet"/>
+    </sequence>
+</process>
