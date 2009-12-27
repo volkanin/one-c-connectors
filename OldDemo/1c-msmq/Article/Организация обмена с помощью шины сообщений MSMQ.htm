@@ -1,0 +1,1602 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<meta name="robots" content="index, follow">
+<meta name="keywords" content="Организация обмена с помощью шины сообщений MSMQ">
+<meta name="description" content="В данное статье приводится пример организации обмена через шину сообщений MSMQ.">
+<title>
+Организация обмена с помощью шины сообщений MSMQ</title>
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/jquery-1.js"></script>
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/jquery.js"></script>
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/style_003.css" type="text/css" rel="stylesheet">
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/style_002.css" type="text/css" rel="stylesheet">
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/additional.css" type="text/css" rel="stylesheet">
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/style.css" type="text/css" rel="stylesheet">
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/styles.css" type="text/css" rel="stylesheet">
+<link href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/template_styles.css" type="text/css" rel="stylesheet">
+<script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/utils.js"></script>
+<script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/script_002.js"></script>
+<script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/script_003.js"></script>
+<script type="text/javascript">var ajaxMessages = {wait:"Загрузка..."}</script>
+<script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/cphttprequest.js"></script>
+<link rel="stylesheet" href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/lightbox.css" type="text/css" media="screen">
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/spica.js"></script>
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/lightbox_plus.js"></script>
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/scripts_002.js"></script>
+<script type="text/javascript" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/scripts.js"></script>
+<link rel="stylesheet" href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/jquery_002.css" type="text/css" media="projection, screen">
+<link rel="stylesheet" href="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/jquery.css" type="text/css" media="projection, screen">
+<!--[if lte IE 7]>
+<link rel="stylesheet" href="/bitrix/templates/infostart/jquery.tabs-ie.css" type="text/css" media="projection, screen" />
+<![endif]-->
+<!--[if IE]>
+<link rel="stylesheet" type="text/css" media="screen" href="/ie6.css" />
+<![endif]-->
+
+<link rel="icon" href="http://infostart.ru/favicon.ico" type="image/x-icon">
+</head><body style="background-color: rgb(230, 230, 230);">
+
+
+<div id="header1">
+	<ul id="pages">
+		<li class="page_item"><a href="http://infostart.ru/about/" title="О сайте">О сайте</a></li>
+        <li class="page_item"><a href="http://infostart.ru/service/" title="Сервисы">Сервисы</a></li>
+        <li class="page_item"><a href="http://infostart.ru/action/" title="Акции">Акции и призы</a></li>
+        <li class="page_item"><a href="http://infostart.ru/map/" title="Карта сайта">Карта сайта</a></li>
+        <li class="email"><a href="http://infostart.ru/profile/subscribe.php" title="Еженедельный обзор">Подписки</a></li>
+        <li class="rss"><a href="http://feeds.feedburner.com/infostart/lHDs" rel="nofollow" title="Подписка на RSS">RSS в ридер</a></li>
+        <li class="rss"><a href="http://feedburner.google.com/fb/a/mailverify?uri=infostart/lHDs" rel="nofollow" title="Подписка на е-майл">RSS на Email</a></li>	
+    </ul>
+	<form id="searchform" method="get" action="/search/">
+		<input name="q" id="q" value="Поиск по сайту ..." onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;" type="text"> 
+		<input name="s" class="searchsubmit" value="" type="submit">
+	</form>		
+</div><!-- enf od header1 -->
+
+<script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/urchin.js" type="text/javascript"></script>
+<script type="text/javascript">
+    _uacct = "UA-645806-1";
+    urchinTracker();
+</script>
+<!--LiveInternet counter--><script type="text/javascript">new Image().src = "http://counter.yadro.ru/hit?r" + escape(document.referrer) + ((typeof(screen)=="undefined")?"" : ";s"+screen.width+"*"+screen.height+"*" + (screen.colorDepth?screen.colorDepth:screen.pixelDepth)) + ";u"+escape(document.URL) + ";h"+escape(document.title.substring(0,80)) + ";" +Math.random();</script><!--/LiveInternet-->
+
+<div id="wrap">
+
+   <span id="logo"> <a href="http://infostart.ru/" class="infostart"></a></span>
+
+   <div id="contacts">
+    <b>Есть вопросы?</b> <br>
+    тел. (812) 309-06-46<br>
+    support@infostart.ru<br>
+            <a href="http://infostart.ru/profile/support/" title="Задать вопрос">Техподдержка</a>
+       </div>
+
+   <div id="menucompany">
+        Нас уже <b>89519</b>. <br>
+        <a href="http://infostart.ru/public/20274/">XMPP/JABBER сервер</a><br>
+        <a href="http://infostart.ru/public/60778/">Апгрейд публикации</a><br>
+        <a href="http://infostart.ru/community/groups/148/">Дайджесты от Арчибальда</a><br>
+   </div>
+   
+   <div id="block_menu">
+	   <a href="http://infostart.ru/public/edit/" hidefocus="true" title="" class="tool add_pub">Создать публикацию</a>
+   </div>
+
+    <div id="user_info">
+      
+
+  <a href="http://infostart.ru/profile//">mini_root<br>
+Андрей Межов</a> 
+ <br>
+  <form action="/public/21077/" style="float: right;"> 
+     
+    <input name="logout" value="yes" type="hidden"> 
+    <input name="logout_butt" value="Выйти" class="button" type="submit"> 
+  </form> 
+
+
+
+
+</div>
+    <script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/script.js" type="text/javascript"></script>
+<ul id="topbar">
+                  <li>
+        <a href="http://infostart.ru/news/" class="root-item">
+          Новости        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/rubricator/" class="root-item">
+          Рубрикатор        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/public/" class="root-item-selected">
+          Публикации        </a></li>
+                              <li><a href="http://infostart.ru/store/" class="root-item">
+  Маркет <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/store/index.php">
+        Каталог        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/rules.php">
+        Правила работы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/payment.php">
+        Способы оплаты        </a></li>
+                              </ul></li><li><a href="http://infostart.ru/community/" class="root-item">
+  Сообщество <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/community/top100/">
+        Топ-100        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/groups/">
+        Группы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/people/search.php">
+        Люди        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/blog/">
+        Блоги        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/poll/">
+        Опросы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/online/">
+        Кто на сайте        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/groups/148/">
+        Экспертиза публикаций        </a></li>
+                              </ul></li><li><a href="http://infostart.ru/forum/" class="root-item">
+  Форум <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/forum/index.php">
+        Все        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/comments/">
+        Комментарии        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/">
+        Лента форума        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/1c77/">
+        - 1C:7.7        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/1c81/">
+        - 1С:8        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/new/">
+        Новые темы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/live/">
+        Прямой эфир        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/search/">
+        Поиск        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/subscribe/">
+        Подписка на темы        </a></li>
+                              </ul></li><li style="float: right;"><a href="http://infostart.ru/basket/" class="root-item">
+  Покупателю <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/basket/index.php">
+        Моя корзина        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/basket/order.php">
+        Мои заказы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/basket/costumer.php">
+        Контрагенты        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/rules.php">
+        Правила работы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/payment.php">
+        Способы оплаты        </a></li>
+                              </ul></li><li style="float: right;"><a href="http://infostart.ru/profile/" class="root-item-orange">
+  Мой профайл <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/profile/log/">
+        Новости        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/public/">
+        Публикации        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/groups/">
+        Группы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/forum/">
+        Форум        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/blog/">
+        Блог        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/subscribe.php">
+        Подписка        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/partnership/">
+        Партнерство        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/activity/">
+        Действия        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/messages/">
+        Сообщения        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/support/">
+        Техподдержка        </a></li>
+                                          </ul></li>          </ul>
+    
+    
+  <div id="main">
+    <ul class="breadcrumb-navigation"><li><a href="http://infostart.ru/" title="Главная">Главная</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/" title="Все для 1С">Все для 1С</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/?rubric=1996" title="ПРОГРАММИРОВАНИЕ">ПРОГРАММИРОВАНИЕ</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/?rubric=1596" title="Полезные технологии">Полезные технологии</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li>Организация обмена с помощью шины сообщений MSMQ</li></ul>     <h1 class="headview">Организация обмена с помощью шины сообщений MSMQ</h1>
+ 
+
+<a name="author_info"></a>
+<div class="public">
+
+<p>
+    </p><ul id="obj_menu" class="bluetabs">
+        <li class="first selected"><a href="http://infostart.ru/public/21077/" rel="obj_cont_text" class="selected">Основное</a></li>
+        		    </ul>
+
+
+
+<div class="obj_info">
+	<span class="tool cdate">10.07.2009 21:48:54</span>
+	<span class="tool mdate">[11.07.2009 01:04:26]</span>	<a href="http://infostart.ru/profile/67014/" title="mini_root" class="tool author">mini_root</a>
+    <span class="tool star">29</span>
+
+</div>
+
+<p class="info">Для 1С: Предприятие 8.1</p>
+
+    <div class="object_image_detail_empty">
+        <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21077" class="info">Добавить веселую картинку для анонса никогда не поздно.</a></p>
+    </div>
+
+
+<p class="txtdescr">
+	<strong>В данное статье приводится пример организации обмена через шину сообщений MSMQ.</strong>
+</p>
+
+
+
+	<p class="txt"></p><p>&nbsp;</p>
+<div class="Section1">
+<div><span style="white-space: pre;"> </span>С выходом восьмой версии
+1С в руки разработчиков попали сразу несколько совершенно замечательных
+вещей, которые позволяет строить сложные распределенные системы с
+участием 1С. Во-первых, сериализация в XML, а во вторых - планы обмена.
+Сериализация предоставила возможность представлять данные хранящиеся в
+базе 1С в нейтральном формате, пригодном для дальнейшей обработке любой
+системой, а планы обмена позволили описывать перечень данных для
+которых будут регистрироваться изменения, и которые будут выгружаться.
+При этом выгрузка, загрузка и регистрация ведется в разрезе логических
+узлов обмена. Узлы обмена в свою очередь позволяют легко реализовать
+схему обмена один к одному или один ко многим.</div>
+<div><span style="white-space: pre;"> </span>По сути единственная вещь,
+которая отдана на реализацию разработчикам - это собственно транспорт.
+А вот тут все оказалось довольно банально - почти во всех случаях все
+сводится к обмену файлами. Файлы выгружаются на FTP или любое другое
+общедоступное место одним из узлов обмена и загружаются другим. Такая
+схема имеет ряд достоинств, прежде всего довольно высокую надежность и
+простоту реализации. Но она и не лишена недостатков, прежде всего
+связанных с масштабируемостью и производительностью, особенно если
+требуется организовать какую-то произвольную обработку выгружаемых
+данных для их последующей загрузки в систему отличную от 1С.&nbsp;</div>
+<div><span style="white-space: pre;"> </span>Уже достаточно давно люди
+пришли к осознанию того, что для интеграции разнородных
+сильнораспределенных систем требуется некая общая точка, интеграционное
+ПО, которое будет гарантировать доставку, обеспечивать возможность
+промежуточной обработки, да и вообще скроет разнообразные системы друг
+от друга. И при так взгляде на вещи, обмен файлами через общую шару уже
+не является идеальным.&nbsp;</div>
+<div><span style="white-space: pre;"> </span>В данной статье, мы
+рассмотрим пример интеграции двух баз 1С с помощью шины сообщений. В
+качестве шины сообщений будем использовать MSMQ (хотя для меня
+привычней JMS, но в этом случае ценность примера будет гораздо ниже,
+так как вряд ли кто-то будет поднимать ActiveMQ, для которого тоже есть
+адаптеры на C#, и заниматься противоестественным играми с быдложабкой).
+&nbsp;Тема судя по всему свежа, c учетом того, что поиск msmq или jms
+на том же Инфостарте не дает никаких результатов.</div>
+<div><span style="white-space: pre;"> </span>Для начало немного теории,
+шина сообщений - это промежуточный механизм для обмена сообщениями,
+который обладает следующими свойствами:</div>
+<div>1. Клиенты шины сообщений не взаимодействуют друг с другом непосредственно, они даже не знают друг о друге почти ничего.</div>
+<div>2. Все взаимодействие ведется через шину сообщений, шина сообщений считается априори надежной и транзакционной.</div>
+<div>3. Логическим структурами, с помощью которых клиенты шины сообщений обмениваются информацией, являются очереди и топики.</div>
+<div>4. Отправитель помещает сообщение в некоторую очередь, а
+получатель забирает сообщения из некоторой очереди, при этом между ними
+может быть сколько угодно промежуточных
+узлов-ретрансляторов/преобразователей. Отправитель видит только место
+куда он должен поместить сообщение, а получатель - откуда забрать. При
+этом гарантируется что сообщение будет получено в нужном порядке и
+только одним получателем (кстати, несколько конкурирующих получателей
+позволяют организвовать параллельную обработку там где сообщения не
+зависят друг от друга).</div>
+<div>5. Отправитель публикует сообщение в топик, при этом его получает все подписчики, слушающие топик в данный момент времени.</div>
+<div>6. Некоторые шины сообщений имеют уже готовый набор обработчиков,
+которые позволяют фильтровать сообщений, разбивать поток сообщений и
+вновь агрегировать его, здесь стоит упомянуть проект Camel для ActiveMQ.</div>
+<div><span style="white-space: pre;"> </span>Таким образом шина
+сообщений разделяет разнородные и системы и позволяет организовывать
+обмен между ними не связывая их между собой непосредственно.</div>
+<div><span style="white-space: pre;"> </span>Но вернемся примеру. Итак,
+в нем мы реализуем обмен XML сообщениями между двумя базами 1С, для
+обмена мы будем использовать очереди сообщений MSMQ, при этом мы таки
+будем сохранять сообщения на файловую систему для организации следа, в
+отладочных целях и для организации возможности быстрой повторной
+выгрузки. Кроме того в данном пример даже в случае отстуствия изменения
+генерируется сообщение, для наглядности. Дополнительно мы реализует
+систему оповещения об ошибках возникших при обмене, используя протокол
+XMMP и любой клиент (в моем случае - Pidgin).</div>
+<div><span style="white-space: pre;"> </span>Общая схема будет выглядеть так:</div>
+<div><span style="white-space: pre;"> </span><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/06610caf821b.jpg" alt="schema" height="420" width="600"></div>
+<div><span style="white-space: pre;"> </span>Для начала нам потребуется установить MSMQ.</div>
+<div><span style="white-space: pre;"> </span>установка:</div>
+<div><span style="white-space: pre;"> </span><strong>ocsetup.exe MSMQ-Container;MSMQ-Server;MSMQ-DCOMProxy /log:D:\msmq-install.log</strong></div>
+<div><strong><br></strong></div>
+<div><span style="white-space: pre;"> </span>удаление:</div>
+<div><span style="white-space: pre;"> </span><strong>ocsetup.exe MSMQ-Container;MSMQ-Server;MSMQ-DCOMProxy /uninstall</strong></div>
+<div><strong><br></strong></div>
+<div><span style="white-space: pre;"> </span>под Windows XP также можно установить через установку и удаление программ.</div>
+<div>&nbsp;&nbsp; &nbsp;</div>
+</div>
+<p><span style="white-space: pre;"> </span>Также нам потребуется некая
+тестовая конфигурация (приведена в архиве), в которой мы создадим план
+обмена с дополнительным строковым реквизитом, который назовем
+ОчередьДляПолучения, в этом реквизите будет хранится очередь, в которую
+будут помещаться все сообщения для данного узла:</p>
+<p><span style="white-space: pre;"> </span><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/93792dcb1ff0.jpg" alt="exchange_nodes" height="400" width="619"></p>
+<div><span style="white-space: pre;"> </span>Дальше будет необходимо создать и определить ряд констант (в D:\ExchangeOut выгружаются сообщения для следа):</div>
+<div><span style="white-space: pre;"> </span><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/90f70ac5ff8f.jpg" alt="constants" height="300" width="600"></div>
+<div>&nbsp;&nbsp; &nbsp;</div>
+<div><span style="white-space: pre;"> </span>Следующий момент состоит в
+том, что создать адаптеры для подключения к MSMQ и Jabber-серверу - они
+уже есть в архиве (в готовом виде и в виде исходников). Для обоих
+адаптеров определим одинаковый интерефейс, как пример того, что можно
+делать взаимозаменяемые адаптеры для разных систем обмена сообщениями
+(хотя jabber использовать не стоит из-за отсутствия транзакций, а вот
+JMS таки да).</div>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">using System<span style="color: red;">;<br></span>using System<span style="color: red;">.</span>Runtime<span style="color: red;">.</span>InteropServices<span style="color: red;">;<br><br></span>namespace MSMQAdapter <br>{ <br>&nbsp; &nbsp; <span style="color: red;">[</span>ComVisible<span style="color: red;">(</span>true<span style="color: red;">)]<br>&nbsp; &nbsp; </span>public interface IAdapter <br>&nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; void SetParameter<span style="color: red;">(</span>string _name<span style="color: red;">, </span>string _value<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void ClearParameters<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void SendFile<span style="color: red;">(</span>string _text<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Send<span style="color: red;">(</span>string _text<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>bool HasMessage<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>string Receive<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Start<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Stop<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Begin<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Commit<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>void Rollback<span style="color: red;">();<br>&nbsp; &nbsp; </span>} <br>}</p>
+<div><span style="white-space: pre;"> </span>Ну и наконец, перейдем к
+написанию обработки, которая будет осуществлять обмена по выбранному
+плану и узлу (на примере получения):&nbsp;&nbsp; &nbsp;</div>
+<p style="color: blue; font-family: courier new,courier; text-align: left;"><span style="color: red;">Процедура </span>Получение<span style="color: red;">(</span>adapter<span style="color: red;">, </span>узел<span style="color: red;">)<br>&nbsp; &nbsp; </span>adapter<span style="color: red;">.</span>Begin<span style="color: red;">();<br>&nbsp; &nbsp; Попытка<br>&nbsp; &nbsp; &nbsp; &nbsp; Пока </span>adapter<span style="color: red;">.</span>HasMessage<span style="color: red;">() Цикл<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>xml <span style="color: red;">= </span>adapter<span style="color: red;">.</span>Receive<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если </span>СтрДлина<span style="color: red;">(</span>xml<span style="color: red;">) &gt; </span><span style="color: black;">500 </span><span style="color: red;">Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ЗаписьВЖуранал<span style="color: red;">(</span><span style="color: black;">"Получение: "</span><span style="color: red;">+</span>Сред<span style="color: red;">(</span>xml<span style="color: red;">, </span><span style="color: black;">1</span><span style="color: red;">, </span><span style="color: black;">500</span><span style="color: red;">));<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Иначе<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ЗаписьВЖуранал<span style="color: red;">(</span><span style="color: black;">"Получение: "</span><span style="color: red;">+</span>xml<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML <span style="color: red;">= Новый </span>ЧтениеXML<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML<span style="color: red;">.</span>УстановитьСтроку<span style="color: red;">(</span>xml<span style="color: red;">);<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеСообщения <span style="color: red;">= </span>ПланыОбмена<span style="color: red;">.</span>СоздатьЧтениеСообщения<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла <span style="color: red;">= </span>узел<span style="color: red;">.</span>ПолучитьОбъект<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>исходныйНомерПринятого <span style="color: red;">= Неопределено;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Попытка<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеСообщения<span style="color: red;">.</span>НачатьЧтение<span style="color: red;">(</span>чтениеXML<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Исключение<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если Не </span>ФлажокСтрогийПорядокСообщений <span style="color: red;">Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если </span>СтрЧислоВхождений<span style="color: red;">(<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ОписаниеОшибки<span style="color: red;">(),<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: black;">"Номер сообщения меньше или равен номеру ранее принятого сообщения"<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: red;">) Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: green;">//Автокоррекция номера принятого<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>исходныйНомерПринятого <span style="color: red;">= </span>объектУзла<span style="color: red;">.</span>НомерПринятого<span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла<span style="color: red;">.</span>НомерПринятого <span style="color: red;">= </span><span style="color: black;">0</span><span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла<span style="color: red;">.</span>Записать<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML<span style="color: red;">.</span>Закрыть<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML <span style="color: red;">= Новый </span>ЧтениеXML<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML<span style="color: red;">.</span>УстановитьСтроку<span style="color: red;">(</span>xml<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеСообщения<span style="color: red;">.</span>НачатьЧтение<span style="color: red;">(</span>чтениеXML<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Иначе<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ВызватьИсключение </span>ОписаниеОшибки<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецПопытки;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если </span>чтениеСообщения<span style="color: red;">.</span>Отправитель <span style="color: red;">&lt;&gt; </span>узел<span style="color: red;">.</span>Ссылка <span style="color: red;">Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ВызватьИсключение </span><span style="color: black;">"Неверный узел отправителя. Ошибка маршрутизации."</span><span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>НачатьТранзакцию<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Попытка<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Пока </span>ВозможностьЧтенияXML<span style="color: red;">(</span>чтениеXML<span style="color: red;">) Цикл<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>данные <span style="color: red;">= </span>ПрочитатьXML<span style="color: red;">(</span>чтениеXML<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ЗаписьВЖуранал<span style="color: red;">(</span><span style="color: black;">"Данные: "</span><span style="color: red;">+</span>данные<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: green;">//данные.ОбменДанными.Загрузка = Истина;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>данные<span style="color: red;">.</span>Записать<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ПланыОбмена<span style="color: red;">.</span>УдалитьРегистрациюИзменений<span style="color: red;">(<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеСообщения<span style="color: red;">.</span>Отправитель<span style="color: red;">,<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>данные <br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; <span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЦикла;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если Не </span>исходныйНомерПринятого <span style="color: red;">= Неопределено Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Если </span>чтениеСообщения<span style="color: red;">.</span>НомерПринятого <span style="color: red;">&gt; </span>исходныйНомерПринятого <span style="color: red;">Тогда<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла<span style="color: red;">.</span>НомерПринятого <span style="color: red;">= </span>чтениеСообщения<span style="color: red;">.</span>НомерПринятого<span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Иначе<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла<span style="color: red;">.</span>НомерПринятого <span style="color: red;">= </span>чтениеСообщения<span style="color: red;">.</span>НомерПринятого<span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Иначе<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>объектУзла<span style="color: red;">.</span>НомерПринятого <span style="color: red;">= </span>чтениеСообщения<span style="color: red;">.</span>НомерПринятого<span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецЕсли;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>ЗафиксироватьТранзакцию<span style="color: red;">();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеСообщения<span style="color: red;">.</span>ЗакончитьЧтение<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>чтениеXML<span style="color: red;">.</span>Закрыть<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Исключение<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ВызватьИсключение </span>ОписаниеОшибки<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; КонецПопытки;<br>&nbsp; &nbsp; &nbsp; &nbsp; КонецЦикла;<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>adapter<span style="color: red;">.</span>Commit<span style="color: red;">();<br>&nbsp; &nbsp; Исключение<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>adapter<span style="color: red;">.</span>Rollback<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; ВызватьИсключение </span>ОписаниеОшибки<span style="color: red;">();<br>&nbsp; &nbsp; КонецПопытки;<br>КонецПроцедуры<br><br><br></span></p>
+<div>
+<div style="padding-left: 30px;"><span style="white-space: pre;"> </span></div>
+<div><span style="white-space: pre;"><span style="white-space: pre;"> </span>Обработка включена в обе базы в архиве.<br></span></div>
+<div><span style="white-space: pre;"><br></span></div>
+</div>
+<div><span style="white-space: pre;"> </span>Теперь, прежде чем начать
+тестирование, надо позаботиться о jabber-сервере (или закомментировать
+соотвествующие строчки в обработке), я использовал OpenFire, поднятый в
+виртуалбоксе - такие извращения были связаны с тем, что библиотека
+agsXMPP, разыменовывает под вистой localhost не как 127.0.0.1, а как
+::1 (IPv6), в то время как OpenFire там не висит.</div>
+<div><span style="white-space: pre;"> </span>Итак запуск....&nbsp;<a href="http://www.youtube.com/watch?v=5wolQ2STjdY">http://www.youtube.com/watch?v=5wolQ2STjdY</a>.
+На видео демонстрируются изменения в центральной базе и их отображение
+в переферийной после обмена, а также отправка сообщения об ошибке через
+XMPP.</div>
+<div><span style="white-space: pre;"> </span>Что еще можно сделать:</div>
+<div>1. Вынести обмен из обработки в регламентное задание.</div>
+<div>2. Оформить сообщение об ошибке в виде структурированного XML, и
+написать специальную программу клиент (или конфигурацию к 1С), которая
+будет их принимать, сохранять и определенным образом отображать.</div>
+<div>3. Переделать интерфейс JabberAdapter'а.</div>
+<div>4. Вообще отказаться от jabber'а и использовать MSMQ для транспорта сообщений об ошибках.</div>
+<div><span style="white-space: pre;"> </span>Открытые вопросы:</div>
+<div>1. Насколько такой механизм будет эффективен при большом
+количестве переферийных баз и необходимости обмена с другми системами,
+отличным от 1С?</div>
+<div>2. Насколько легко его будет контроллировать?</div>
+<div>3. Любые другие.</div>
+<div><span style="white-space: pre;"> </span>Архив со всеми файлами приведен здесь&nbsp;<a href="http://infostart.ru/projects/4993/">http://infostart.ru/projects/4993/</a></div>
+<div><span style="white-space: pre;"> </span>P.S. С учетом того, что я
+ковыряю эску чуть более трех месяцев, в моем быдлокоде может быть
+какая-нибудь глупость - любая конструктивная критика приветствуется.</div>
+<div><span style="white-space: pre;"> </span>P.P.S. Если кому интересно
+во что такая система может вылиться в пределе, ищете в гугле
+"Enterprise Integration Patterns RUS.djvu" - ооочень занимательная
+книжка...</div>
+<p><a href="http://infostart.ru/public/edit/?id=21077" class="tool edit info">Редактировать</a></p>
+        <p style="color: rgb(153, 0, 0);" class="info">
+Самый простой способ сделать скриншот, это нажать клавишу PrintScreen
+на клавиатуре, открыть Пуск -&gt; Программы -&gt; Стандартные -&gt;
+Paint, вставить рисунок из буфера (Ctrl+V), сохранить в файл в формате
+PNG.<br>
+        </p>
+
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21077#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21077#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21077#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+
+
+<div class="obj_info">
+    <span class="tool star">29</span>
+    <a href="http://infostart.ru/public/21077/?rate=1" class="tool plus" onclick="infostart_rate(21077, 1); return false;" title="Поставить плюс">Рекомендую</a>
+    <a href="http://infostart.ru/public/21077/?rate=-1" class="tool minus" onclick="infostart_rate(21077, -1); return false;" title="Поставить минус">Не тратить время</a>
+	<a href="http://infostart.ru/public/21077/?print=Y" class="tool info print">Версия для печати</a>
+</div>
+
+<br>
+
+
+    <h3 class="paragraph clleft" id="comm">Комментарии  (52)</h3>
+
+    <div class="obj_info isright">
+        <a href="#author_info" class="tool info backup">В начало публикации</a>
+    </div>
+    <p>
+            <a href="http://infostart.ru/public/21077/?ordercomm=direct" title="сверху вниз" class="tool info sort_asc">Вкл. прямой порядок комментариев</a>
+        </p>
+    
+                    <br clear="all">
+            <script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/script_004.js" type="text/javascript"></script><script type="text/javascript">
+var smallEngLettersReg = new Array(/e'/g, /ch/g, /sh/g, /yo/g, /jo/g, /zh/g, /yu/g, /ju/g, /ya/g, /ja/g, /a/g, /b/g, /v/g, /g/g, /d/g, /e/g, /z/g, /i/g, /j/g, /k/g, /l/g, /m/g, /n/g, /o/g, /p/g, /r/g, /s/g, /t/g, /u/g, /f/g, /h/g, /c/g, /w/g, /~/g, /y/g, /'/g);
+var smallRusLetters = new Array("э", "ч", "ш", "ё", "ё", "ж", "ю", "ю", "я", "я", "а", "б", "в", "г", "д", "е", "з", "и", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "щ", "ъ", "ы", "ь");
+
+var capitEngLettersReg = new Array(
+	/Ch/g, /Sh/g, 
+	/Yo/g, /Zh/g, 
+	/Yu/g, /Ya/g, 
+	/E'/g, /CH/g, /SH/g, /YO/g, /JO/g, /ZH/g, /YU/g, /JU/g, /YA/g, /JA/g, /A/g, /B/g, /V/g, /G/g, /D/g, /E/g, /Z/g, /I/g, /J/g, /K/g, /L/g, /M/g, /N/g, /O/g, /P/g, /R/g, /S/g, /T/g, /U/g, /F/g, /H/g, /C/g, /W/g, /Y/g);
+var capitRusLetters = new Array(
+	"Ч", "Ш",
+	"Ё", "Ж",
+	"Ю", "Я",
+	"Э", "Ч", "Ш", "Ё", "Ё", "Ж", "Ю", "Ю", "\Я", "\Я", "А", "Б", "В", "Г", "Д", "Е", "З", "И", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Щ", "Ы");
+
+var smallRusLettersReg = new Array(/э/g, /ч/g, /ш/g, /ё/g, /ё/g,/ж/g, /ю/g, /ю/g, /я/g, /я/g, /а/g, /б/g, /в/g, /г/g, /д/g, /е/g, /з/g, /и/g, /й/g, /к/g, /л/g, /м/g, /н/g, /о/g, /п/g, /р/g, /с/g, /т/g, /у/g, /ф/g, /х/g, /ц/g, /щ/g, /ъ/g, /ы/g, /ь/g );
+var smallEngLetters = new Array("e", "ch", "sh", "yo", "jo", "zh", "yu", "ju", "ya", "ja", "a", "b", "v", "g", "d", "e", "z", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "h", "c", "w", "~", "y", "'");
+
+var capitRusLettersReg = new Array(
+	/Ч(?=[^А-Я])/g, /Ш(?=[^А-Я])/g, 
+	/Ё(?=[^А-Я])/g, /Ж(?=[^А-Я])/g, 
+	/Ю(?=[^А-Я])/g, /Я(?=[^А-Я])/g, 
+	/Э/g, /Ч/g, /Ш/g, /Ё/g, /Ё/g, /Ж/g, /Ю/g, /Ю/g, /Я/g, /Я/g, /А/g, /Б/g, /В/g, /Г/g, /Д/g, /Е/g, /З/g, /И/g, /Й/g, /К/g, /Л/g, /М/g, /Н/g, /О/g, /П/g, /Р/g, /С/g, /Т/g, /У/g, /Ф/g, /Х/g, /Ц/g, /Щ/g, /Ъ/g, /Ы/g, /Ь/g);
+var capitEngLetters = new Array(
+	"Ch", "Sh",
+	"Yo", "Zh",
+	"Yu", "Ya",
+	"E", "CH", "SH", "YO", "JO", "ZH", "YU", "JU", "YA", "JA", "A", "B", "V", "G", "D", "E", "Z", "I", "J", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U", "F", "H", "C", "W", "~", "Y", "'");
+
+</script><a name="postform"></a>
+
+<div class="comment_line">
+
+	<p class="info">При ответе на комментарий, указывайте его номер в круглых скобках, например, (1).</p>
+
+
+<form name="REPLIER" id="REPLIER" action="/public/21077/#postform" method="POST" enctype="multipart/form-data" onsubmit="return ValidateForm(this, 'Y');" onkeydown="if(null != init_form){init_form(this)}" onmouseover="if(init_form){init_form(this)}" class="forum-form">
+	<input name="PAGE_NAME" value="message" type="hidden">
+	<input name="FID" value="24" type="hidden">
+	<input name="TID" value="25667" type="hidden">
+	<input name="MID" value="0" type="hidden">
+	<input name="MESSAGE_TYPE" value="REPLY" type="hidden">
+	<input name="AUTHOR_ID" value="" type="hidden">
+	<input name="forum_post_action" value="save" type="hidden">
+	<input name="MESSAGE_MODE" value="NORMAL" type="hidden">
+	
+	<div class="forum-reply-fields">
+
+		<div class="forum-reply-field forum-reply-field-bbcode">
+
+			<div class="forum-bbcode-line" id="forum_bbcode_line">
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-bold" id="form_b" title="Полужирный (alt+b)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-italic" id="form_i" title="Курсив (alt+i)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-underline" id="form_u" title="Подчеркнутый (alt+u)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-strike" id="form_s" title="Перечеркнутый (alt+s)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-quote" id="form_quote" title="Оформление текста в виде цитаты (alt+q)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-code" id="form_code" title="Оформление текста в виде кода (alt+p)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-url" id="form_url" title="Ввод гиперссылки (alt+h)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-img" id="form_img" title="Подключение изображения (alt+g)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-video" id="form_video" title="Подключение видео (alt+v)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-list" id="form_list" title="Оформление текста в виде списка (alt+l)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-color" id="form_palette" title="Цвет">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-translit" id="form_translit" title="Перекодировка транслит/латиница (alt+t)">
+					<img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/empty_for_ie.gif"></a>
+				<select name="FONT" class="forum-bbcode-font" id="form_font" title="Шрифт">
+					<option selected="selected" value="none">Шрифт</option>
+					<option value="Arial" style="font-family: Arial;">Arial</option>
+					<option value="Times" style="font-family: Times;">Times</option>
+					<option value="Courier" style="font-family: Courier;">Courier</option>
+					<option value="Impact" style="font-family: Impact;">Impact</option>
+					<option value="Geneva" style="font-family: Geneva;">Geneva</option>
+					<option value="Optima" style="font-family: Optima;">Optima</option>
+					<option value="Verdana" style="font-family: Verdana;">Verdana</option>
+				</select>
+			</div>
+<script>
+document.write('<style>div.forum-smiles-corrected{height:16px; overflow:hidden;}</style>');
+document.write('<style>div.forum-smiles-none{visibility:hidden;}</style>');
+</script><style>div.forum-smiles-corrected{height:16px; overflow:hidden;}</style><style>div.forum-smiles-none{visibility:hidden;}</style>
+			<div class="forum-clear-float"></div><div class="forum-smiles-line forum-smiles-corrected " id="forum_smiles_line">
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_biggrin.gif" class="smiles" alt=":D" title="Широкая улыбка" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_idea.gif" class="smiles" alt=":idea:" title="Идея" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_question.gif" class="smiles" alt=":?:" title="Вопрос" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_exclaim.gif" class="smiles" alt=":!:" title="Восклицание" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_wink.gif" class="smiles" alt=";)" title="Шутливо" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_evil.gif" class="smiles" alt=":evil:" title="Со злостью" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_cry.gif" class="smiles" alt=":cry:" title="Очень грустно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_redface.gif" class="smiles" alt=":oops:" title="Смущенно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_kiss.gif" class="smiles" alt=":{}" title="Поцелуй" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_cool.gif" class="smiles" alt="8-)" title="Здорово" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_eek.gif" class="smiles" alt=":o" title="Удивленно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_sad.gif" class="smiles" alt=":(" title="Печально" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_smile.gif" class="smiles" alt=":)" title="С улыбкой" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_neutral.gif" class="smiles" alt=":|" title="Скептически" border="0" height="16" width="16"></a></span>
+			</div>
+<script>
+document.write('<div class="forum-reply-field forum-reply-field-showsmiles" id="forum_smile_switcher" style="visibility:hidden;">');
+document.write('<a href="#postform" id="form_smiles_dinamic">Еще</a></div>');
+jsUtils.addEvent(window, "load", function(e){ForumShowSmile(e)});
+function ForumShowSmile(e)
+{
+	var sIndex = '';
+	var form = document.forms["REPLIER"];
+	var forum_bbcode_line = document.getElementById('forum_bbcode_line');
+	var forum_smiles_line = document.getElementById('forum_smiles_line');
+	var forum_smile_switcher = document.getElementById('forum_smile_switcher');
+	var params = {'width' : form.POST_MESSAGE.offsetWidth, 'width_real' : 0};
+	var res = forum_smiles_line.getElementsByTagName('A');
+	if (res && res.length > 0)
+	{
+		for (var ii = 0; ii < res.length; ii++)
+		{
+			params['width_real'] += parseInt(res[ii].parentNode.offsetWidth);
+		}
+	}
+	if (params['width'] >= params['width_real'])
+	{
+		var res = document.createElement('DIV');
+		res.className = "forum-clear-float";
+		forum_smiles_line.parentNode.insertBefore(res, forum_smiles_line);
+	}
+	if (((params['width'] - forum_bbcode_line.offsetWidth) >= params['width_real']) ||
+		params['width'] >= params['width_real'])
+	{
+		forum_smile_switcher.style.display = 'none';
+		forum_smiles_line.className = forum_smiles_line.className.replace('forum-smiles-none', '');
+		return true;
+	}
+	init_form(form);
+	oForumForm[form.id].show_smiles_dinamic(forum_smile_switcher.firstChild, '', 'N');
+	forum_smiles_line.className = forum_smiles_line.className.replace(/forum\-smiles\-none/gi, '');
+	forum_smile_switcher.style.visibility = 'visible';
+}
+</script><div class="forum-reply-field forum-reply-field-showsmiles" id="forum_smile_switcher" style="visibility: hidden; display: none;"><a href="#postform" id="form_smiles_dinamic">Еще</a></div>
+			<div class="forum-clear-float"></div>
+		</div>
+		<div class="forum-reply-field forum-reply-field-text">
+			<textarea name="POST_MESSAGE" class="post_message" cols="55" rows="7" tabindex="10"></textarea>
+		</div>
+		<div class="forum-reply-field forum-reply-field-upload">
+			<div class="forum-upload-info" style="display: none;" id="upload_files_info_">
+				<span>Размер файла не должен превышать 47.68 МБ.</span>
+			</div>
+
+			<div class="forum-upload-file" style="display: none;" id="upload_files_0_">
+				<input name="FILE_NEW_0" value="" size="30" type="file">
+			</div>
+
+			<div class="forum-upload-file" style="display: none;" id="upload_files_1_">
+				<input name="FILE_NEW_1" value="" size="30" type="file">
+			</div>
+			<a href="javascript:void(0);" onclick="AttachFile('0', '2', '', this); return false;">
+				<span>Прикрепить файл</span>
+			</a>
+		</div>
+		<div class="forum-reply-field forum-reply-field-settings">
+			<div class="forum-reply-field-setting">
+				<input name="USE_SMILES" id="USE_SMILES" value="Y" checked="checked" tabindex="11" type="checkbox">&nbsp;<label for="USE_SMILES">Показывать графические смайлы в этом сообщении</label></div>
+		</div>
+		<div class="forum-reply-buttons">
+			<input name="send_button" value="Ответить" tabindex="12" onclick="this.form.MESSAGE_MODE.value = 'NORMAL';" type="submit">
+			&nbsp;&nbsp;
+							<a href="http://infostart.ru/public/21077/?subscribe=Y&amp;sessid=807b51c29b14575d82428d5dbf7a3132" title="Получать уведомления на e-mail о новых комментариях">Подписаться на новые комментарии</a>
+					</div>
+
+	</div>
+</form></div>
+
+<script type="text/javascript">
+function AttachFile(iNumber, iCount, sIndex, oObj)
+{
+	var element = null;
+	var bFined = false;
+	iNumber = parseInt(iNumber);
+	iCount = parseInt(iCount);
+
+	document.getElementById('upload_files_info_' + sIndex).style.display = 'block';
+	for (var ii = iNumber; ii < (iNumber + iCount); ii++)
+	{
+		element = document.getElementById('upload_files_' + ii + '_' + sIndex);
+		if (!element || typeof(element) == null)
+			break;
+		if (element.style.display == 'none')
+		{
+			bFined = true;
+			element.style.display = 'block';
+			break;
+		}
+	}
+	var bHide = (!bFined ? true : (ii >= (iNumber + iCount - 1)));
+	if (bHide == true)
+		oObj.style.display = 'none';
+}
+function AddTags(a)
+{
+	if (a != null)
+	{
+		var div = a.parentNode.previousSibling;
+		div.style.display = "block";
+		a.parentNode.style.display = "none";
+
+		var inputs = div.getElementsByTagName("INPUT");
+		for (var i = 0 ; i < inputs.length ; i++ )
+		{
+			if (inputs[i].type.toUpperCase() == "TEXT")
+			{
+				CorrectTags(inputs[i]);
+				inputs[i].focus();
+				break;
+			}
+		}
+	}
+
+	return false;
+}
+function CorrectTags(oObj)
+{
+	if (document.getElementById('TAGS_div_frame'))
+		document.getElementById('TAGS_div_frame').id = oObj.id + "_div_frame";
+}
+
+var bSendForm = false;
+if (typeof oErrors != "object")
+	var oErrors = {};
+oErrors['no_topic_name'] = "Вы должны ввести название темы. ";
+oErrors['no_message'] = "Вы должны ввести сообщение. ";
+oErrors['max_len'] = "Максимальная длина сообщения #MAX_LENGTH# символов. Всего символов: #LENGTH#.";
+oErrors['no_url'] = "Вы должны ввести адрес (URL)";
+oErrors['no_title'] = "Ведите название.";
+oErrors['no_path'] = "Укажите путь к видео.";
+if (typeof oText != "object")
+	var oText = {};
+oText['author'] = " пишет:\n";
+oText['enter_url'] = "Введите полный адрес (URL)";
+oText['enter_url_name'] = "Введите название сайта";
+oText['enter_image'] = "Введите полный адрес (URL) изображения";
+oText['list_prompt'] = "Введите пункт списка. Нажмите \'Отмена\' или оставьте пробел для завершения списка";
+oText['video'] = "Видео";
+oText['path'] = "Путь:";
+oText['width'] = "Ширина:";
+oText['height'] = "Высота:";
+
+oText['BUTTON_OK'] = "Вставить";
+oText['BUTTON_CANCEL'] = "Отмена";
+oText['smile_hide'] = "Скрыть";
+
+if (typeof oHelp != "object")
+	var oHelp = {};
+
+function reply2author(name)
+{
+		document.REPLIER.POST_MESSAGE.value += "[b]"+name+"[/b]"+" \n";
+		return false;
+}
+</script>        
+        
+        <p class="pages">
+
+<b>Страницы:</b>
+
+
+
+	
+			<b class="active">1</b>
+		
+	
+
+	
+			<a href="http://infostart.ru/public/21077/?PAGEN_1=2#comm">2</a>
+		
+	
+
+	
+			<a href="http://infostart.ru/public/21077/?PAGEN_1=3#comm">3</a>
+		
+	
+
+	<a href="http://infostart.ru/public/21077/?PAGEN_1=2#comm">Вперед</a>
+	<b>&#8594;</b>
+
+</p>
+                                            <div class="comment_line">
+                <a name="comm283415"></a>
+                <span class="isleft">52.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283415" onclick="infostart_rate_comment(283415, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283415" onclick="infostart_rate_comment(283415, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">04.08.2009 17:35:15                                                                            <a href="http://infostart.ru/public/21077/?edit_comment=283415#postform">Редактировать</a>
+                                            </span>
+                    <div class="txt">В
+случае с HTTPS все сводится к разрешению подключения только доверенных
+клиентов и раздаче этим клиентам сертификатов. Сертификат есть,
+подключишься, сертификата нету: <br>
+<br>IIS 5.0: HTTP 403.16 Forbidden: Client Certificate Untrusted or Invalid. 
+<br>
+<br>или что-то подобное
+<br>
+<br>Ну и у сервера свой сертификат должен быть.
+<br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283414"></a>
+                <span class="isleft">51.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283414" onclick="infostart_rate_comment(283414, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283414" onclick="infostart_rate_comment(283414, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">04.08.2009 17:27:40                                                                    </span>
+                    <div class="txt">Хотя если есть VPN, то наверное не страшно.
+<br>
+<br>Вот вроде бы вариант с использованием HTTPS: <a href="http://technet.microsoft.com/en-us/library/cc736680%28WS.10%29.aspx" target="_blank" rel="nofollow">http://technet.microsoft.com/en-us/li...S.10).aspx</a>
+<br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283413"></a>
+                <span class="isleft">50.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283413" onclick="infostart_rate_comment(283413, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283413" onclick="infostart_rate_comment(283413, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">04.08.2009 17:22:11                                                                    </span>
+                    <div class="txt">Но:
+<br>
+<br>&gt;Security Limitations
+<br>
+<br>&gt;Opening a remote queue for sending messages with a direct
+format name signals Message Queuing not to query the directory service
+when it opens the queue. This enables Message Queuing to send messages
+in workgroup and offline mode and to transmit messages across forest
+boundaries, but it eliminates the possibility of using some of the
+security functionality provided by Message Queuing for access control,
+authentication, and encryption. When security services performed by
+Message Queuing are unavailable, it is the responsibility of your
+application to implement the missing functionality.
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283412"></a>
+                <span class="isleft">49.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283412" onclick="infostart_rate_comment(283412, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283412" onclick="infostart_rate_comment(283412, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">04.08.2009 17:20:20                                                                    </span>
+                    <div class="txt"><a href="http://msdn.microsoft.com/en-us/library/ms700996%28VS.85%29.aspx" target="_blank" rel="nofollow">http://msdn.microsoft.com/en-us/libra...S.85).aspx</a>
+<br>
+<br>&gt;Direct format names are used to reference public or private
+queues without accessing the directory service. Direct format names are
+used when performing the following operations:
+<br>
+<br>    * Sending messages directly to a computer.
+<br>    * Sending messages to computers over the Internet.
+<br>    * Sending messages across forest boundaries.
+<br>    * Sending messages to any queue while operating in domain, workgroup, or offline mode.
+<br>    * Reading messages while operating in domain, workgroup, or offline mode.
+<br>
+<br>там же:
+<br>
+<br>&gt; DIRECT=TCP:157.18.3.1\MyQueue</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283411"></a>
+                <span class="isleft">48.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283411" onclick="infostart_rate_comment(283411, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283411" onclick="infostart_rate_comment(283411, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">04.08.2009 17:17:18                                                                    </span>
+                    <div class="txt">Ну, во-первых, у MSMQ есть множество разных компонентов (с TCP транспортом, с HTTP и пр.). 
+<br>
+<br>Во-вторых, в строке соединения с очередью можно указывать транспорт и имя узла, если не ошибаюсь, что-то такое:
+<br>
+<br>DIRECT=TCP:IPAddress\QueueName;
+<br>
+<br>Это ж у меня все локально аля ".\Private$\...."
+<br>
+<br>В-третьих, вон там выше есть товарищ с ником hotey, он наладил обмен между разными узлами внутри локалки.
+<br>
+<br>
+<br>P.S. Кроме того там есть еще такая вещь как каналы <a href="http://www.codeproject.com/KB/IP/msmqchannel.aspx" target="_blank" rel="nofollow">http://www.codeproject.com/KB/IP/msmqchannel.aspx</a>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283410"></a>
+                <span class="isleft">47.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283410" onclick="infostart_rate_comment(283410, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283410" onclick="infostart_rate_comment(283410, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/25457/" class="tool user" title="igor-bts">igor-bts</a>
+                    <span class="info">04.08.2009 16:51:16                                                                    </span>
+                    <div class="txt">Вопрос, а как эта система будет работать в распределенной (через интернет) сети?</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283409"></a>
+                <span class="isleft">46.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283409" onclick="infostart_rate_comment(283409, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283409" onclick="infostart_rate_comment(283409, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">31.07.2009 11:28:56                                                                    </span>
+                    <div class="txt">А вот взгляд на интеграцию с другой точки: <a href="http://infostart.ru/blogs/1236/" target="_blank" rel="nofollow">http://infostart.ru/blogs/1236/</a> 
+<br>
+<br>Хотя для взаимодействия через план обмена предпочтительнее использовать таки обычную шину сообщений.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283408"></a>
+                <span class="isleft">45.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283408" onclick="infostart_rate_comment(283408, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283408" onclick="infostart_rate_comment(283408, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/18385/" class="tool user" title="hotey">hotey</a>
+                    <span class="info">27.07.2009 02:52:28                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=44" target="_blank" title="Комментарий #44" class="comment-ref">(44)</a> Да собственно на статью материала маловато. Все полезные выводы уместились в предыдущий комментарий.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283407"></a>
+                <span class="isleft">44.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283407" onclick="infostart_rate_comment(283407, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283407" onclick="infostart_rate_comment(283407, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">24.07.2009 20:03:02                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=43" target="_blank" title="Комментарий #43" class="comment-ref">(43)</a> Спасибо, если будет возможность и желание - поделитесь опытом, например, в виде статьи. 
+<br>
+<br>P.S. А я постараюсь через недельку подогнать еще одну, на этот раз на тему интеграции 1С с шиной веб-сервисов OpenESB.
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283406"></a>
+                <span class="isleft">43.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283406" onclick="infostart_rate_comment(283406, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283406" onclick="infostart_rate_comment(283406, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/18385/" class="tool user" title="hotey">hotey</a>
+                    <span class="info">24.07.2009 03:29:39                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=42" target="_blank" title="Комментарий #42" class="comment-ref">(42)</a> Локально на одной машине заработало так как и было. То есть на XP пришлось только прорегистрировать DLL с помощью regasm.exe.
+<br>А вот на Win2k3 Server пришлось в AssemblyInfo.cs прописать:
+<br>using System.Security;
+<br>[assembly: AllowPartiallyTrustedCallers()]
+<br>И перекомпилить - только после этого пошло...
+<br>Что касается непосредственно компонентов MSMQ, то в итоге стоят почти все доступные. <img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_smile.gif" alt="smile:)" title="С улыбкой" border="0">
+<br>Сейчас только осталось разобраться с роутингом и прочими
+наворотами, чтобы сообщения проходили между хостами, которые не
+пересекаются во времени.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283405"></a>
+                <span class="isleft">42.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283405" onclick="infostart_rate_comment(283405, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283405" onclick="infostart_rate_comment(283405, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">23.07.2009 10:44:43                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=41" target="_blank" title="Комментарий #41" class="comment-ref">(41)</a> Интересно, а какие компоненты MSMQ дополнительно ставили? На висту хоум басик многих вещей не поставишь.
+<br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283404"></a>
+                <span class="isleft">41.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283404" onclick="infostart_rate_comment(283404, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283404" onclick="infostart_rate_comment(283404, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/18385/" class="tool user" title="hotey">hotey</a>
+                    <span class="info">23.07.2009 08:12:12                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=40" target="_blank" title="Комментарий #40" class="comment-ref">(40)</a>
+А у меня всё получилось только после целого ряда дополнительных
+телодвижений. Большая часть была произведена возможно по своей
+неопытности, но пришлось даже свойства сборки менять и dll
+перекомпилировать. Я правда пытался связь между XP и 2003 Server
+наладить...</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283403"></a>
+                <span class="isleft">40.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283403" onclick="infostart_rate_comment(283403, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283403" onclick="infostart_rate_comment(283403, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/10604/" class="tool user" title="desty">desty</a>
+                    <span class="info">23.07.2009 02:19:31                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=39" target="_blank" title="Комментарий #39" class="comment-ref">(39)</a>
+<br>Я пробовал, все работает <img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_wink.gif" alt="smile;-)" title="Шутливо" border="0"></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283402"></a>
+                <span class="isleft">39.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283402" onclick="infostart_rate_comment(283402, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283402" onclick="infostart_rate_comment(283402, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/18385/" class="tool user" title="hotey">hotey</a>
+                    <span class="info">22.07.2009 09:03:15                                                                    </span>
+                    <div class="txt">А кто-нибудь пробовал в сети этот пример запустить? Проходят сообщения?</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283401"></a>
+                <span class="isleft">38.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283401" onclick="infostart_rate_comment(283401, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283401" onclick="infostart_rate_comment(283401, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">17.07.2009 13:20:47                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=37" target="_blank" title="Комментарий #37" class="comment-ref">(37)</a> будет время, постараюсь еще одну статейку накатать
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283400"></a>
+                <span class="isleft">37.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283400" onclick="infostart_rate_comment(283400, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283400" onclick="infostart_rate_comment(283400, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/1746/" class="tool user" title="steban">steban</a>
+                    <span class="info">17.07.2009 12:44:54                                                                    </span>
+                    <div class="txt">&gt;я знаю как можно интегрировать эску с практически любым ESB (пробовал на OpenESB)
+<br>
+<br>с этого момента, пожалуйста, поподробней</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283399"></a>
+                <span class="isleft">36.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283399" onclick="infostart_rate_comment(283399, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283399" onclick="infostart_rate_comment(283399, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">17.07.2009 12:09:05                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=36" target="_blank" title="Комментарий #36" class="comment-ref">(36)</a>
+Можно и так, но я с ним не сталкивался - это первое. Особого геморроя я
+тут не вижу - это второе, дешево и вполне способно заменить файловый
+обмен, особенно с учетом того, что сообщения в файлы все равно
+сохраняются и повторная отправка делается на счет раз. Ну а если в
+середину вставить XSL трансформатор, то можно и с другими системами
+меняться. <br>
+<br>Ну и наконец, с таким же интерфейсом можно сделать адаптеры к
+другим системам обмена сообщениями, например, к ActiveMQ - а это уже
+быдложабка 2 EE (я специально сделал один интерфейс для MSMQ и для
+XMPP, чтобы это продемонстрировать). Интеграция с BizTalk'ом вряд ли
+будет чем-то отличаться от вариантов приведенных в статье и в
+обсуждении. И опять же, не бизтолком единым, есть и другие решения -
+COM, XML сериализация и планы обмена дают большой простор для фантазии,
+например, я знаю как можно интегрировать эску с практически любым ESB
+(пробовал на OpenESB). <br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283398"></a>
+                <span class="isleft">35.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283398" onclick="infostart_rate_comment(283398, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283398" onclick="infostart_rate_comment(283398, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/7024/" class="tool user" title="alex_4x">alex_4x</a>
+                    <span class="info">17.07.2009 10:32:48                                                                    </span>
+                    <div class="txt">А зачем такой геморой ? Уж если применять шину данных, то пользоваться серьзным, промышленным решением, типа BizTalk.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283397"></a>
+                <span class="isleft">34.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283397" onclick="infostart_rate_comment(283397, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283397" onclick="infostart_rate_comment(283397, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/38683/" class="tool user" title="Аверков">Аверков</a>
+                    <span class="info">15.07.2009 10:58:12                                                                    </span>
+                    <div class="txt">Скиншот 1
+<br>Кеды "Престарелый гопник" экстрим эдишн
+<br>Охренеть - дайте две! <img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/icon_smile.gif" alt="smile:)" title="С улыбкой" border="0"></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm283396"></a>
+                <span class="isleft">33.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21077/?crate=1&amp;cid=283396" onclick="infostart_rate_comment(283396, 1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21077/?crate=-1&amp;cid=283396" onclick="infostart_rate_comment(283396, -1, 21077); return false;"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">14.07.2009 23:51:43                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=25667&amp;c=32" target="_blank" title="Комментарий #32" class="comment-ref">(32)</a>
+Как уже выше предлагалось оформить все в в виде ВК, тем более, что судя
+по всему Вас вполне устроит работа в на клиентской стороне.
+<br>В метод Init ВК приезжает контекст одинэски а в SetParameter
+скармливается имя процедуры в глобальнике. При получении сообщения эта
+процедура дергается и ей скармливается аргументом сам адаптер, чтобы
+внутри процедуры можно было иметь полный контроль на транзакцией, ну а
+там в цикле точно также получаются все сообщения. В следующей версии
+можно попробовать реализовать.
+<br></div>
+                                                                                                </div>
+            </div>
+        
+        <p class="pages">
+
+<b>Страницы:</b>
+
+
+
+	
+			<b class="active">1</b>
+		
+	
+
+	
+			<a href="http://infostart.ru/public/21077/?PAGEN_1=2#comm">2</a>
+		
+	
+
+	
+			<a href="http://infostart.ru/public/21077/?PAGEN_1=3#comm">3</a>
+		
+	
+
+	<a href="http://infostart.ru/public/21077/?PAGEN_1=2#comm">Вперед</a>
+	<b>&#8594;</b>
+
+</p>    
+
+    
+
+    <div class="obj_info isright">
+        <a href="#author_info" class="tool info backup">В начало публикации</a>
+    </div>
+
+
+</div>
+
+</div>
+
+  <div id="side">
+ 
+
+
+
+
+
+
+    <script src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/script_005.js" type="text/javascript"></script><script language="JavaScript">
+<!--
+	var sonetDynevMsgGetPath = '/bitrix/components/bitrix/socialnetwork.events_dyn/get_message.php';
+	var sonetDynevMsgSetPath = '/bitrix/components/bitrix/socialnetwork.events_dyn/set_message.php';
+	var sonetDynevSessid = 'sessid=807b51c29b14575d82428d5dbf7a3132';
+	var sonetDynevUserId = 67014;
+	var sonetDynevTimeout = 40000;
+	var sonetDynevPath2User = '/profile/#user_id#/';
+	var sonetDynevPath2Group = '/community/groups/#group_id#/';
+	var sonetDynevPath2Message = '/profile/messages/chat/#user_id#/';
+	var sonetDynevPath2MessageMess = '/profile/messages/chat/#user_id#/';
+	var sonetDynevPath2Chat = '/profile/messages/chat/#user_id#/';
+	var sonetDynevCurPage = '/public/21077/index.php';
+	var sonetDynevCurParam = '';
+
+	var sonetDynevTrOnline = 'Сейчас на сайте';
+	var sonetDynevTrFrTitle = 'Приглашение дружить!';
+	var sonetDynevTrGrInv = 'Приглашает';
+	var sonetDynevTrGrTitle = 'Приглашение вступить в группу!';
+	var sonetDynevTrMsTitle = 'Вам сообщение!';
+//-->
+</script>
+
+<div id="sonet_events_err" class="errortext" style="display: none;">
+</div>
+
+<div id="sonet_events_fr" style="display: none;">
+	<div class="box">
+		<h2>Приглашение дружить!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_fr_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_fr_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    хочет добавить Вас в список своих друзей.
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_fr_message">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_fr_add" name="do_friend_add" value="Дружить" type="button">
+                    <input id="sonet_events_fr_reject" name="do_friend_reject" value="Отклонить" type="button">
+                </td>
+            </tr>
+            </tbody></table>
+		</div>            
+	</div>
+	<br>
+</div>
+
+<div id="sonet_events_gr" style="display: none;">
+	<div class="box">
+		<h2>Приглашение вступить в группу!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_gr_group" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_message">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_gr_add" name="do_friend_add" value="Принять" type="button">
+                    <input id="sonet_events_gr_reject" name="do_friend_reject" value="Отклонить" type="button">
+                </td>
+            </tr>
+            </tbody></table>
+		</div>            
+	</div>
+</div>
+
+<div id="sonet_events_ms" style="display: none;">
+
+	<div class="box">
+		<h2>Вам сообщение!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_ms_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_ms_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="sonet_events_ms_message"></div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_ms_answer" name="do_message_answer" value="Ответить" type="button">
+                    <input id="sonet_events_ms_close" name="do_message_close" value="Закрыть" type="button">
+                    <span id="sonet_events_ms_ban">
+                        <br><br><a href="#" id="sonet_events_ms_ban_link">В черный список</a>
+                    </span>
+                </td>
+            </tr>
+            </tbody></table>
+    	</div>            
+	</div>
+</div>
+
+
+    <div id="menuaction" class="box">
+        <h2>Контекстное меню</h2>
+        <div class="pad10">
+            <ul>
+
+			                <div class="liner"></div>
+                <h3>Организация обмена с помощью шины сообщений MSMQ</h3>
+			
+			                
+                    <li><a href="http://infostart.ru/public/edit/?id=21077" hidefocus="true" title="Редактировать публикацию" class="tool info edit">Редактировать публикацию</a></li>
+
+                                            <li><a href="http://infostart.ru/public/21077/?hide_object=21077&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Скрыть публикацию в профайл" class="tool info hide">Снять с публикации</a></li>
+                    
+                    <li><a href="http://infostart.ru/public/?delete_object=21077&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Удаление без возврата" onclick="return confirm('Вы действительно хотите удалить данную запись?');" class="tool info del">Удалить публикацию</a></li>
+
+                    
+					  <!-- ВОТ ЗДЕСЬ ИЗМЕНИТЬ ПРИ ОТКРЫТИИ ГРУПП -->
+                                                    <div class="liner"></div>
+                            <li><a href="http://infostart.ru/public/21077/?create=group&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Апгрейд публикации" class="tool info upgrade">Апгрейд публикации</a></li>
+                                            
+                    <div class="liner"></div>
+
+                
+
+                
+                <li><a href="http://infostart.ru/public/21077/#comm" class="tool info backdown">Перейти к комментариям</a></li>
+                                    <li><a href="http://infostart.ru/public/21077/?ordercomm=direct" title="сверху вниз" class="tool info sort_asc">Вкл. прямой порядок комментариев</a></li>
+                
+           
+			            </ul>
+        </div>
+    </div>
+        
+
+
+    <h3 class="paragraph">Оценка сообщества</h3>
+    <div>
+        <a style="color: rgb(255, 255, 255);" title="Плюс" href="http://infostart.ru/public/21077/?rate=1" onclick="infostart_rate(21077, 1); return false;" class="news_rate_page  rate_yell">29</a>
+        <p>
+    
+        <b>Поставьте плюс, если вы рекомендуете данную публикацию к прочтению и использованию.</b><br>
+        <span class="info">Плюс будет добавлять публикацию в <a href="http://infostart.ru/profile/favorites/">Мое избранное</a></span>.
+        
+        <br><br>
+        <a href="http://infostart.ru/public/21077/?rate=1" class="tool plus" onclick="infostart_rate(21077, 1); return false;">Рекомендую</a>
+        <a href="http://infostart.ru/public/21077/?rate=-1" class="tool minus" onclick="infostart_rate(21077, -1); return false;">Не тратить время</a>
+        <br>
+        <span class="info">Если рейтинг упадет до -5, то публикация автоматически удалится.</span>
+        </p>
+    </div>
+    
+
+
+        <div>
+        
+            <a name="users_raters"></a>
+            <b style="color: rgb(51, 204, 0);">Плюсы: (+29):</b>
+            <p>
+                                                                                    <a href="http://infostart.ru/profile/13529/" title="Дата голоса: 09.09.2009 06:28:09" class="tool user">ovv</a>
+                                    <a href="http://infostart.ru/profile/57916/" title="Дата голоса: 01.09.2009 08:18:16" class="tool user">cv78</a>
+                                    <a href="http://infostart.ru/profile/53469/" title="Дата голоса: 23.08.2009 16:44:33" class="tool user">freeshka</a>
+                                    <a href="http://infostart.ru/profile/27322/" title="Дата голоса: 12.08.2009 09:17:13" class="tool user">anreko</a>
+                                    <a href="http://infostart.ru/profile/16866/" title="Дата голоса: 05.08.2009 18:08:19" class="tool user">NikNik</a>
+                                    <a href="http://infostart.ru/profile/2472/" title="Дата голоса: 05.08.2009 11:30:14" class="tool user">dr.Uid</a>
+                                    <a href="http://infostart.ru/profile/25081/" title="Дата голоса: 05.08.2009 09:21:37" class="tool user">kell</a>
+                                    <a href="http://infostart.ru/profile/1630/" title="Дата голоса: 04.08.2009 17:02:16" class="tool user">JohnyDeath</a>
+                                    <a href="http://infostart.ru/profile/49691/" title="Дата голоса: 23.07.2009 05:23:58" class="tool user">Alexandr_P</a>
+                                    <a href="http://infostart.ru/profile/16036/" title="Дата голоса: 22.07.2009 19:09:39" class="tool user">gin256</a>
+                                    <a href="http://infostart.ru/profile/49410/" title="Дата голоса: 16.07.2009 11:13:10" class="tool user">vladsol</a>
+                                    <a href="http://infostart.ru/profile/43713/" title="Дата голоса: 16.07.2009 02:09:36" class="tool user">Anything</a>
+                                    <a href="http://infostart.ru/profile/5575/" title="Дата голоса: 15.07.2009 08:59:17" class="tool user">n0ther</a>
+                                    <a href="http://infostart.ru/profile/19642/" title="Дата голоса: 14.07.2009 21:20:46" class="tool user">o.nikolaev.infostart</a>
+                                    <a href="http://infostart.ru/profile/22923/" title="Дата голоса: 14.07.2009 21:18:26" class="tool user">Вадимыч</a>
+                                    <a href="http://infostart.ru/profile/44947/" title="Дата голоса: 14.07.2009 13:10:53" class="tool user">smth</a>
+                                    <a href="http://infostart.ru/profile/13407/" title="Дата голоса: 14.07.2009 12:25:40" class="tool user">gudun_ku</a>
+                                    <a href="http://infostart.ru/profile/45588/" title="Дата голоса: 14.07.2009 12:00:21" class="tool user">sound</a>
+                                    <a href="http://infostart.ru/profile/9158/" title="Дата голоса: 14.07.2009 11:47:23" class="tool user">NewNick</a>
+                                    <a href="http://infostart.ru/profile/53/" title="Дата голоса: 14.07.2009 11:01:57" class="tool user">support</a>
+                                    <a href="http://infostart.ru/profile/23740/" title="Дата голоса: 13.07.2009 09:39:50" class="tool user">oberonm</a>
+                                    <a href="http://infostart.ru/profile/18385/" title="Дата голоса: 13.07.2009 09:38:44" class="tool user">hotey</a>
+                                    <a href="http://infostart.ru/profile/10604/" title="Дата голоса: 13.07.2009 09:33:13" class="tool user">desty</a>
+                                    <a href="http://infostart.ru/profile/5266/" title="Дата голоса: 12.07.2009 20:22:33" class="tool user">anderson</a>
+                                    <a href="http://infostart.ru/profile/2349/" title="Дата голоса: 12.07.2009 19:06:07" class="tool user">Donat</a>
+                                    <a href="http://infostart.ru/profile/5500/" title="Дата голоса: 11.07.2009 20:11:03" class="tool user">Ломастер</a>
+                                    <a href="http://infostart.ru/profile/35251/" title="Дата голоса: 11.07.2009 18:19:51" class="tool user">gilv</a>
+                                    <a href="http://infostart.ru/profile/3975/" title="Дата голоса: 11.07.2009 14:22:36" class="tool user">dushelov</a>
+                                    <a href="http://infostart.ru/profile/1746/" title="Дата голоса: 10.07.2009 23:22:14" class="tool user">steban</a>
+                            </p>
+                                </div>
+    
+    <h3 class="paragraph">Лучшие публикации mini_root</h3>
+
+    <div class="block">
+    	        <p class="">
+            </p><div class="smallstar">29</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">10.07.2009 21:48:54</span> <span class="info">Статья</span> <br>
+                <a title="Организация обмена с помощью шины сообщений MSMQ" href="http://infostart.ru/public/21077/"><b>Организация обмена с помощью шины сообщений MSMQ</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Организация обмена с помощью шины сообщений MSMQ" href="http://infostart.ru/public/21077/#comm">комм(52)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">13</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">06.09.2009 21:11:18</span> <span class="info">Статья</span> <br>
+                <a title="Организация B2B интеграции с использованием 1С и JMS" href="http://infostart.ru/public/22184/"><b>Организация B2B интеграции с использованием 1С и JMS</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Организация B2B интеграции с использованием 1С и JMS" href="http://infostart.ru/public/22184/#comm">комм(8)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">10</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">30.07.2009 23:26:37</span> <span class="info">Статья</span> <br>
+                <a title="Интеграция 1С с сервисной шиной OpenESB" href="http://infostart.ru/public/21506/"><b>Интеграция 1С с сервисной шиной OpenESB</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Интеграция 1С с сервисной шиной OpenESB" href="http://infostart.ru/public/21506/#comm">комм(10)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">8</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">06.09.2009 21:08:35</span> <span class="info">Программа</span> <br>
+                <a title="Архив к статье &quot;Организация B2B интеграции с использованием 1С и JMS&quot;" href="http://infostart.ru/public/22183/"><b>Архив к статье "Организация B2B интеграции с использованием 1С и JMS"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Архив к статье &quot;Организация B2B интеграции с использованием 1С и JMS&quot;" href="http://infostart.ru/public/22183/#comm">комм(5)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">8</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">30.07.2009 23:24:13</span> <span class="info">Программа</span> <br>
+                <a title="Архив к статье &quot;Интеграция 1С с сервисной шиной OpenESB&quot;" href="http://infostart.ru/public/21505/"><b>Архив к статье "Интеграция 1С с сервисной шиной OpenESB"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                            </div> 
+        
+	
+
+
+    <p>
+    <a href="http://infostart.ru/profile/67014/public/">Все публикации mini_root.</a>
+    </p>
+    </div>
+
+            <h3 class="paragraph">См. также:</h3>
+                                                        <a href="http://infostart.ru/public/?rubric=1996">ПРОГРАММИРОВАНИЕ</a> »
+                                        <a href="http://infostart.ru/public/?rubric=1596">Полезные технологии</a><br>
+            <div class="block">
+                	        <p class="">
+            </p><div class="smallstar">399</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">14.04.2009 03:06:05</span> <span class="info">Программа</span> <br>
+                <a title="Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)" href="http://infostart.ru/public/19633/"><b>Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/13819/" title="awa">awa</a></span>
+                                    <span class="tool comm"><a title="Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)" href="http://infostart.ru/public/19633/#comm">комм(121)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">148</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">23.04.2009 01:50:40</span> <span class="info">Статья</span> <br>
+                <a title="Краткое описание формата файлов *.1CD (файловых баз 1Сv8)" href="http://infostart.ru/public/19734/"><b>Краткое описание формата файлов *.1CD (файловых баз 1Сv8)</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/13819/" title="awa">awa</a></span>
+                                    <span class="tool comm"><a title="Краткое описание формата файлов *.1CD (файловых баз 1Сv8)" href="http://infostart.ru/public/19734/#comm">комм(29)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">89</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">09.10.2006</span> <span class="info">Статья</span> <br>
+                <a title="Методическое пособие &quot;Основные объекты&quot;" href="http://infostart.ru/public/16908/"><b>Методическое пособие "Основные объекты"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/1437/" title="GROOVY">GROOVY</a></span>
+                                    <span class="tool comm"><a title="Методическое пособие &quot;Основные объекты&quot;" href="http://infostart.ru/public/16908/#comm">комм(28)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">79</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">18.10.2008 12:16:50</span> <span class="info">Программа</span> <br>
+                <a title="Фоновое выполнение отчетов и обработок в 1С77" href="http://infostart.ru/public/16555/"><b>Фоновое выполнение отчетов и обработок в 1С77</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/1782/" title="maljaev">maljaev</a></span>
+                                    <span class="tool comm"><a title="Фоновое выполнение отчетов и обработок в 1С77" href="http://infostart.ru/public/16555/#comm">комм(24)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">67</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">04.02.2009 22:46:27</span> <span class="info">Статья</span> <br>
+                <a title="Взлом сервера с помощью 1С:Предприятие 8.1" href="http://infostart.ru/public/18962/"><b>Взлом сервера с помощью 1С:Предприятие 8.1</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/180/" title="O-Planet">O-Planet</a></span>
+                                    <span class="tool comm"><a title="Взлом сервера с помощью 1С:Предприятие 8.1" href="http://infostart.ru/public/18962/#comm">комм(126)</a></span>
+                                            </div> 
+        
+	
+
+
+            </div>
+            
+
+  </div>
+
+  <div id="prefoot"> 
+   <div class="multiFeaturePromo"> 
+   <ul> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=52&amp;event1=banner&amp;event2=click&amp;event3=16+%2F+%5B52%5D+%5Br1%5D+%D4%E8%ED%E0%ED%F1%EE%E2%FB%E9+%F3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%EE%F2%F7%E5%F2&amp;goto=%2Fpublic%2F22158%2F"><img alt="" title="" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/zavcoamedm.jpg" border="0" height="116" width="130"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=52&amp;event1=banner&amp;event2=click&amp;event3=16+%2F+%5B52%5D+%5Br1%5D+%D4%E8%ED%E0%ED%F1%EE%E2%FB%E9+%F3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%EE%F2%F7%E5%F2&amp;goto=%2Fpublic%2F22158%2F">Финансовый управленческий отчет</a></h3>
+<p>Где оседает прибыль? Какая чистая прибыль? Куда уходят деньги? К
+чему идет бизнес, растем или падаем? Изменение активов за год, квартал,
+месяц. <a href="http://infostart.ru/bitrix/rk.php?id=52&amp;event1=banner&amp;event2=click&amp;event3=16+%2F+%5B52%5D+%5Br1%5D+%D4%E8%ED%E0%ED%F1%EE%E2%FB%E9+%F3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%EE%F2%F7%E5%F2&amp;goto=%2Fpublic%2F22158%2F">Подробнее.</a>
+</p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F"><img alt="" title="" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/avatar.jpg" border="0" height="97" width="160"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F">Универсальная свертка Зарплата и Кадры 7.7(Свертка ЗиК 77)</a></h3>
+<p>При желании для проверки работоспособности можете прислать архив
+любой базы данных (не обязательно рабочей), результат свертки я вам
+отсылаю обратно.
+<a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F">Подробнее.</a></p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F"><img alt="" title="" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/jm_logo.jpg" border="0" height="109" width="113"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F">Кто накосячил в базе 1С?</a></h3>
+<p>История изменений ДО РЕКВИЗИТА! ВОССТАНОВЛЕНИЕ объекта на дату!
+Быстрый поиск по журналу изменений. История по текущему объекту одним кликом.
+<a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F">Подробнее.</a>
+</p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fpublic%2F62879%2F"><img alt="" title="" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/selection.jpg" border="0" height="100" width="100"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fprojects%2F62879%2F">Управленческий баланс</a></h3>
+<p>Интегральное решение для автоматизации управленческого учета, бюджетирования, учета по МСФО и консолидации данных.
+<a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fprojects%2F62879%2F">Подробнее.</a></p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=http%3A%2F%2Finfostart.ru%2Fpublic%2F63221%2F"><img alt="" title="" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/dog.jpg" border="0" height="100" width="100"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=%2Fprojects%2F63221%2F">Робот-Администратор.</a></h3>
+<p>Предназначена для автоматического выполнения задач по обслуживанию
+баз данных "1С: Предприятие 8", которые обычно выполняются системным
+администратором вручную.
+<a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=%2Fprojects%2F63221%2F">Подробнее.</a></p></li> 
+   </ul>
+   </div>
+  </div>
+
+  <div id="footer">
+    <ul id="footerLinks" class="clearit">
+      <li class="first">
+        <dl>
+          <dt>Все для 1С</dt>
+          <dd><a href="http://infostart.ru/">Популярные</a></dd>
+          <dd><a href="http://infostart.ru/public/">Все публикации</a></dd>
+          <dd><a href="http://infostart.ru/30days/">Топ за 30 дней</a></dd>
+          <dd><a href="http://infostart.ru/90days/">Топ за 90 дней</a></dd>
+          <dd><a href="http://infostart.ru/365days/">Топ за 365 дней</a></dd>
+        </dl>
+      </li>
+      <li>
+        <dl>
+          <dt>Еще</dt>
+          <dd><a href="http://infostart.ru/forum/">Форум</a></dd>
+          <dd><a href="http://infostart.ru/store/">Магазин</a></dd>
+          <dd>
+                     </dd>
+          <dd>
+                     </dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Сервисы</dt>
+          <dd><a href="http://infostart.ru/service/premium/">Премиум-аккаунт</a></dd>
+          <dd><a href="http://infostart.ru/service/developers/">Авторские программы</a></dd>
+          <dd><a href="http://infostart.ru/service/partnership/">Партнерство</a></dd>
+          <dd><a href="http://infostart.ru/service/savedeal/">Безопасная сделка</a></dd>
+          <dd><a href="http://infostart.ru/service/advert/">Реклама на сайте</a></dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Акции</dt>
+          <dd><a href="http://infostart.ru/action/prize/">Розыгрыш призов</a></dd>
+          <dd><a href="http://infostart.ru/action/event/">Мероприятия</a></dd>
+          <dd>
+<!--LiveInternet logo--><a href="http://www.liveinternet.ru/click" target="_blank"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/logo.gif" alt="" title="LiveInternet" border="0" height="31" width="31"></a><!--/LiveInternet-->
+           </dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Сообщество</dt>
+          <dd><a href="http://infostart.ru/community/top100/">ТОП 100</a></dd>
+          <dd><a href="http://infostart.ru/community/groups/">Группы</a></dd>
+          <dd>
+                     </dd>
+          <dd><a href="http://infostart.ru/community/blog/">Личные блоги</a></dd>
+        </dl>
+      </li>
+      <li>
+        <dl>
+          <dt>О сайте</dt>
+          <dd><a href="http://infostart.ru/about/">Описание</a></dd>
+          <dd><a href="http://infostart.ru/about/faq/">Помощь</a></dd>
+          <dd><a href="http://infostart.ru/about/rules/">Пользовательское соглашение</a></dd>
+          <dd>
+                     </dd>
+          <dd><a href="http://infostart.ru/about/blog/">Блог проекта</a></dd>
+          <dd><a href="http://infostart.ru/about/contacts/">Контакты</a></dd>
+        </dl>
+      </li>
+    </ul>
+
+    <div id="footerLogos">
+      <p style="padding-bottom: 20px;"> <a href="http://infostart.ru/" title="" style="float: left; margin-bottom: 20px;"> <img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/footerlogo.jpg" alt="Инфостарт"> </a> </p>
+      <span style="font-size: 200%; margin-left: 30px;"> тел. (812) 309-06-46, ICQ: 744-74-973, Skype:infostart</span>
+      <p style="clear: left;"> © 2006 – 2009 ООО «Инфостарт» - все для 1С. <span><a href="http://infostart.ru/map/">Карта сайта</a></span>
+      <span><a href="http://infostart.ru/about/contacts/">Контакты</a></span> <span>
+	        </span>
+       </p>
+      <p class="clleft">Перепечатка материалов с сайта разрешена только при согласии авторов публикаций. </p>
+    </div>
+  </div>
+</div>
+
+<div style="position: absolute; display: none;" id="cluetip-waitimage"></div><div style="display: none; position: absolute;" id="cluetip"><div style="z-index: 96; opacity: 0.1; top: 6px; left: 6px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 5px; left: 5px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 4px; left: 4px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 3px; left: 3px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 2px; left: 2px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 1px; left: 1px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="position: relative; z-index: 97;" id="cluetip-outer"><h3 id="cluetip-title"></h3><div id="cluetip-inner"></div></div><div id="cluetip-extra"></div><div id="cluetip-arrows" class="cluetip-arrows"></div></div><div style="display: none; position: fixed; top: 0px; left: 0px; z-index: 50; width: 100%; height: 100%;" id="overlay"><img style="position: relative; cursor: pointer;" src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/loading.gif" id="loadingImage"></div><div style="display: none; position: absolute; z-index: 60;" id="lightbox"><img style="cursor: pointer;" id="lightboxImage"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/prev.gif" style="display: none; position: absolute; left: 9px; z-index: 70;" id="prevLink"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/next.gif" style="display: none; position: absolute; right: 9px; z-index: 70;" id="nextLink"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/expand.gif" style="display: none; position: absolute; top: 15px; left: 15px; z-index: 70; cursor: pointer;" id="actionImage"><img src="%D0%9E%D1%80%D0%B3%D0%B0%D0%BD%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BE%D0%B1%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%81%20%D0%BF%D0%BE%D0%BC%D0%BE%D1%89%D1%8C%D1%8E%20%D1%88%D0%B8%D0%BD%D1%8B%20%D1%81%D0%BE%D0%BE%D0%B1%D1%89%D0%B5%D0%BD%D0%B8%D0%B9%20MSMQ_files/close.gif" style="display: inline; position: absolute; right: 9px; top: 10px; z-index: 80; cursor: pointer;" id="closeButton"><span style="display: none; position: absolute; z-index: 80;" id="lightboxCaption"></span></div><div style="display: none; position: absolute; z-index: 70;" id="lightboxOverallView"></div><div style="display: none; position: absolute; z-index: 80;" id="lightboxIndicator"></div></body></html>
