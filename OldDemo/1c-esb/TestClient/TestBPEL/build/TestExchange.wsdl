@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="TestExchange" targetNamespace="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExchange"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExchange" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+    <types/>
+    <message name="ExchangeRequest"/>
+    <message name="ExchangeResponse"/>
+    <portType name="TestExchangePortType">
+        <operation name="Exchange">
+            <input name="input1" message="tns:ExchangeRequest"/>
+            <output name="output1" message="tns:ExchangeResponse"/>
+        </operation>
+    </portType>
+    <binding name="TestExchangeBinding" type="tns:TestExchangePortType">
+        <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="Exchange">
+            <soap:operation/>
+            <input name="input1">
+                <soap:body use="literal" namespace="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExchange"/>
+            </input>
+            <output name="output1">
+                <soap:body use="literal" namespace="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExchange"/>
+            </output>
+        </operation>
+    </binding>
+    <service name="TestExchangeService">
+        <port name="TestExchangePort" binding="tns:TestExchangeBinding">
+            <soap:address location="http://localhost:${HttpDefaultPort}/TestExchangeService/TestExchangePort"/>
+        </port>
+    </service>
+    <plnk:partnerLinkType name="TestExchange">
+        <!-- A partner link type is automatically generated when a new port type is added. Partner link types are used by BPEL processes. 
+In a BPEL process, a partner link represents the interaction between the BPEL process and a partner service. Each partner link is associated with a partner link type.
+A partner link type characterizes the conversational relationship between two services. The partner link type can have one or two roles.-->
+        <plnk:role name="TestExchangePortTypeRole" portType="tns:TestExchangePortType"/>
+    </plnk:partnerLinkType>
+</definitions>

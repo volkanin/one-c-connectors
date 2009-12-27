@@ -1,0 +1,1439 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251">
+<meta name="robots" content="index, follow">
+<meta name="keywords" content="Интеграция 1С с сервисной шиной OpenESB">
+<meta name="description" content="В данной статье рассматривается пример интеграции 1С с шиной сервисов OpenESB, и в более широком смысле - встраивание 1С в сервис-ориентированную архитектуру.">
+<title>
+Интеграция 1С с сервисной шиной OpenESB</title>
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/jquery-1.js"></script>
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/jquery.js"></script>
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/style_003.css" type="text/css" rel="stylesheet">
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/style_002.css" type="text/css" rel="stylesheet">
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/additional.css" type="text/css" rel="stylesheet">
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/style.css" type="text/css" rel="stylesheet">
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/styles.css" type="text/css" rel="stylesheet">
+<link href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/template_styles.css" type="text/css" rel="stylesheet">
+<script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/utils.js"></script>
+<script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/script_002.js"></script>
+<script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/script_003.js"></script>
+<script type="text/javascript">var ajaxMessages = {wait:"Загрузка..."}</script>
+<script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/cphttprequest.js"></script>
+<link rel="stylesheet" href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/lightbox.css" type="text/css" media="screen">
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/spica.js"></script>
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/lightbox_plus.js"></script>
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/scripts_002.js"></script>
+<script type="text/javascript" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/scripts.js"></script>
+<link rel="stylesheet" href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/jquery_002.css" type="text/css" media="projection, screen">
+<link rel="stylesheet" href="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/jquery.css" type="text/css" media="projection, screen">
+<!--[if lte IE 7]>
+<link rel="stylesheet" href="/bitrix/templates/infostart/jquery.tabs-ie.css" type="text/css" media="projection, screen" />
+<![endif]-->
+<!--[if IE]>
+<link rel="stylesheet" type="text/css" media="screen" href="/ie6.css" />
+<![endif]-->
+
+<link rel="icon" href="http://infostart.ru/favicon.ico" type="image/x-icon">
+</head><body style="background-color: rgb(230, 230, 230);">
+
+
+<div id="header1">
+	<ul id="pages">
+		<li class="page_item"><a href="http://infostart.ru/about/" title="О сайте">О сайте</a></li>
+        <li class="page_item"><a href="http://infostart.ru/service/" title="Сервисы">Сервисы</a></li>
+        <li class="page_item"><a href="http://infostart.ru/action/" title="Акции">Акции и призы</a></li>
+        <li class="page_item"><a href="http://infostart.ru/map/" title="Карта сайта">Карта сайта</a></li>
+        <li class="email"><a href="http://infostart.ru/profile/subscribe.php" title="Еженедельный обзор">Подписки</a></li>
+        <li class="rss"><a href="http://feeds.feedburner.com/infostart/lHDs" rel="nofollow" title="Подписка на RSS">RSS в ридер</a></li>
+        <li class="rss"><a href="http://feedburner.google.com/fb/a/mailverify?uri=infostart/lHDs" rel="nofollow" title="Подписка на е-майл">RSS на Email</a></li>	
+    </ul>
+	<form id="searchform" method="get" action="/search/">
+		<input name="q" id="q" value="Поиск по сайту ..." onfocus="if(this.value==this.defaultValue)this.value='';" onblur="if(this.value=='')this.value=this.defaultValue;" type="text"> 
+		<input name="s" class="searchsubmit" value="" type="submit">
+	</form>		
+</div><!-- enf od header1 -->
+
+<script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/urchin.js" type="text/javascript"></script>
+<script type="text/javascript">
+    _uacct = "UA-645806-1";
+    urchinTracker();
+</script>
+<!--LiveInternet counter--><script type="text/javascript">new Image().src = "http://counter.yadro.ru/hit?r" + escape(document.referrer) + ((typeof(screen)=="undefined")?"" : ";s"+screen.width+"*"+screen.height+"*" + (screen.colorDepth?screen.colorDepth:screen.pixelDepth)) + ";u"+escape(document.URL) + ";h"+escape(document.title.substring(0,80)) + ";" +Math.random();</script><!--/LiveInternet-->
+
+<div id="wrap">
+
+   <span id="logo"> <a href="http://infostart.ru/" class="infostart"></a></span>
+
+   <div id="contacts">
+    <b>Есть вопросы?</b> <br>
+    тел. (812) 309-06-46<br>
+    support@infostart.ru<br>
+            <a href="http://infostart.ru/profile/support/" title="Задать вопрос">Техподдержка</a>
+       </div>
+
+   <div id="menucompany">
+        Нас уже <b>89520</b>. <br>
+        <a href="http://infostart.ru/public/20274/">XMPP/JABBER сервер</a><br>
+        <a href="http://infostart.ru/public/60778/">Апгрейд публикации</a><br>
+        <a href="http://infostart.ru/community/groups/148/">Дайджесты от Арчибальда</a><br>
+   </div>
+   
+   <div id="block_menu">
+	   <a href="http://infostart.ru/public/edit/" hidefocus="true" title="" class="tool add_pub">Создать публикацию</a>
+   </div>
+
+    <div id="user_info">
+      
+
+  <a href="http://infostart.ru/profile//">mini_root<br>
+Андрей Межов</a> 
+ <br>
+  <form action="/public/21506/" style="float: right;"> 
+     
+    <input name="logout" value="yes" type="hidden"> 
+    <input name="logout_butt" value="Выйти" class="button" type="submit"> 
+  </form> 
+
+
+
+
+</div>
+    <script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/script.js" type="text/javascript"></script>
+<ul id="topbar">
+                  <li>
+        <a href="http://infostart.ru/news/" class="root-item">
+          Новости        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/rubricator/" class="root-item">
+          Рубрикатор        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/public/" class="root-item-selected">
+          Публикации        </a></li>
+                              <li><a href="http://infostart.ru/store/" class="root-item">
+  Маркет <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/store/index.php">
+        Каталог        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/rules.php">
+        Правила работы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/payment.php">
+        Способы оплаты        </a></li>
+                              </ul></li><li><a href="http://infostart.ru/community/" class="root-item">
+  Сообщество <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/community/top100/">
+        Топ-100        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/groups/">
+        Группы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/people/search.php">
+        Люди        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/blog/">
+        Блоги        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/poll/">
+        Опросы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/online/">
+        Кто на сайте        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/community/groups/148/">
+        Экспертиза публикаций        </a></li>
+                              </ul></li><li><a href="http://infostart.ru/forum/" class="root-item">
+  Форум <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/forum/index.php">
+        Все        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/comments/">
+        Комментарии        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/">
+        Лента форума        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/1c77/">
+        - 1C:7.7        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/lenta/1c81/">
+        - 1С:8        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/new/">
+        Новые темы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/live/">
+        Прямой эфир        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/search/">
+        Поиск        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/forum/subscribe/">
+        Подписка на темы        </a></li>
+                              </ul></li><li style="float: right;"><a href="http://infostart.ru/basket/" class="root-item">
+  Покупателю <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/basket/index.php">
+        Моя корзина        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/basket/order.php">
+        Мои заказы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/basket/costumer.php">
+        Контрагенты        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/rules.php">
+        Правила работы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/store/payment.php">
+        Способы оплаты        </a></li>
+                              </ul></li><li style="float: right;"><a href="http://infostart.ru/profile/" class="root-item-orange">
+  Мой профайл <small>&#9660;</small>
+  </a>
+  <ul>
+                                      <li>
+        <a href="http://infostart.ru/profile/log/">
+        Новости        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/public/">
+        Публикации        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/groups/">
+        Группы        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/forum/">
+        Форум        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/67014/blog/">
+        Блог        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/subscribe.php">
+        Подписка        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/partnership/">
+        Партнерство        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/activity/">
+        Действия        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/messages/">
+        Сообщения        </a></li>
+                                                <li>
+        <a href="http://infostart.ru/profile/support/">
+        Техподдержка        </a></li>
+                                          </ul></li>          </ul>
+    
+    
+  <div id="main">
+    <ul class="breadcrumb-navigation"><li><a href="http://infostart.ru/" title="Главная">Главная</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/" title="Все для 1С">Все для 1С</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/?rubric=1996" title="ПРОГРАММИРОВАНИЕ">ПРОГРАММИРОВАНИЕ</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li><a href="http://infostart.ru/public/?rubric=1596" title="Полезные технологии">Полезные технологии</a></li><li><span>&nbsp;&#8594;&nbsp;</span></li><li>Интеграция 1С с сервисной шиной OpenESB</li></ul>     <h1 class="headview">Интеграция 1С с сервисной шиной OpenESB</h1>
+ 
+
+<a name="author_info"></a>
+<div class="public">
+
+<p>
+    </p><ul id="obj_menu" class="bluetabs">
+        <li class="first selected"><a href="http://infostart.ru/public/21506/" rel="obj_cont_text" class="selected">Основное</a></li>
+        		    </ul>
+
+
+
+<div class="obj_info">
+	<span class="tool cdate">30.07.2009 23:26:37</span>
+	<span class="tool mdate">[06.08.2009 13:01:23]</span>	<a href="http://infostart.ru/profile/67014/" title="mini_root" class="tool author">mini_root</a>
+    <span class="tool star">10</span>
+
+</div>
+
+<p class="info">Для 1С: Предприятие 8.1</p>
+
+    <div class="object_image_detail_empty">
+        <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21506" class="info">Добавить веселую картинку для анонса никогда не поздно.</a></p>
+    </div>
+
+
+<p class="txtdescr">
+	<strong>В данной статье рассматривается пример
+интеграции 1С с шиной сервисов OpenESB, и в более широком смысле -
+встраивание 1С в сервис-ориентированную архитектуру.</strong>
+</p>
+
+
+
+	<p class="txt"></p><p>Эта статья является, в некотором
+роде, продолжением статьи "Интеграция 1С с шиной сообщений MSMQ", в ней
+будет рассмотрен пример организации взаимодействия 1С с шиной ESB, и, в
+конечном счете, ее встраивания в сервис-ориентированную архитектуру
+(SOA).</p>
+<p>&nbsp;</p>
+<p><strong>Общие соображения</strong></p>
+<p>&nbsp;</p>
+<p>С развитием стандартов веб-сервисов ("сервисы") появилась идея
+организации универсального промежуточного ПО основанного на сервисах и
+являющегося универсальным фундаментом, позволяющим связывать и
+координировать работу разнообразных приложений и систем в
+сервис-ориентированной архитектуре.&nbsp;<br><br>Идея была простая и
+вытекала из желания объединить воедино всевозможные преобразователи,
+внешние запускали и пр. Собственно для организации шины ESB вполне
+можно использовать тот же подход, что и при использовании обычной шины
+сообщений, таким образом двумя главными элементами будут:&nbsp;<br>1. Некая промежуточная шина, которая позволяет принимать и передавать сообщения в согласованном формате.<br>2.
+Множества подключаемых модулей, которые принимают и передают сообщения
+- этими модулями могут быть коннекторы к внешнем системам или движок
+сервисов, получивший SOAP сообщение и переправляющий его движку BPEL
+(Busines Process Execution Language), который тоже оформлен в виде
+компонента.&nbsp;<br>Собственно нижеприведенная схема организации JBI (&nbsp;<a href="http://en.wikipedia.org/wiki/Java_Business_Integration">http://en.wikipedia.org/wiki/Java_Business_Integration</a>&nbsp;) это иллюстрирует:</p>
+<p><img title="jbi" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/4c741c449d20.png" alt="jbi" height="241" width="434"></p>
+<p><br>Таким образом получаем модульную среду, позволяющую объединить
+самые разные компоненты и системы. Однако не стоит идеализировать ESB,
+как и в любом другом ПО там могут быть свои собственные ошибки,
+например, в ранних версиях OpenESB где-то в глубине вылетал
+NullPointerException при попытке вызвать сервис на Mono и усе, кина не
+будет.<br>&nbsp;<br>Другим важным вопросом является движок
+веб-сервисов, его задачи когда-то были довольно простыми: принять SOAP,
+приземлить вызов, забрать результат и отдать SOAP. Собственно
+встроенный движок 1С и находится на таком уровне, но сейчас от движка
+требуется, помимо этого, реализация множества стандартов, определяющих
+то или иное поведение, например, WS-ReliableMessaging (для
+гарантированной доставки сообщений), WS-Security (для шифрования,
+подписи и аутентификации - заметьте, имено это стандарт, а не поделка
+1С с HTTP аутентификацией, потому что веб-сервисы в общем случе могут
+быть и не "веб"), WS-[Atomic]Transaction (для организации
+транзакционного поведения). Очевидно, что чем более развитым и надежным
+является движок, тем лучше. Эти соображения, а также желания сделать
+универсальный механизм, который можно легко прикрутить к любой
+конфигурации, сразу же ставят крест на встроенном движке
+1С.&nbsp;Собственно выбор не богат, но это не значит, что плох - WCF
+под .NET.</p>
+<p><strong>Схема работы</strong></p>
+<p>&nbsp;</p>
+<p>Основная идея уже всплывала в комменатариях к предыдущей статье:
+сделать универсальный windows сервис, который будет приземлять вызовы
+на 1С через COM.&nbsp; Собственно схему работы всей конструкции можно
+выразить одной строкой:<br><br><strong>&nbsp;&nbsp; &nbsp;? &lt;-n SOAP n-&gt; OpenESB &lt;-1 SOAP 1-&gt; OneCService(WCF) &lt;-1 COM n-&gt; 1С</strong></p>
+<p><span style="white-space: pre;"> </span>где ? - произвольные внешние системы, в примере их роль играют тесты</p>
+<p><span style="white-space: pre;"> </span>&nbsp;&nbsp; &nbsp; OneCService - собственно сервис, разработанный в рамках данного примера</p>
+<p><span style="white-space: pre;"> </span>&nbsp;&nbsp; &nbsp; в угловых скобках указаны способы взаимодействия и отношения<br><br>Такая
+схема позволит не вносить серьезных изменений в конфигурацию, а кроме
+того, получть универсальный механизм, в котором один промежуточный
+сервис позволяет взаимодействовать с разными базами 1С. В данном пример
+будет реализовано только взаимодействие с файловыми версиями, для
+взаимодействия с серверными версиями надо будет просто изменить
+механизм формирования строки соедиения для V8.Application и добавить
+дополнительные методы в интерфейс сервиса.<br><br>При этом, чтобы
+обеспечить универсальность, интерфейс сервиса должен содержать методы,
+позволяющие эффективно осуществлять все наиболее распространенные типы
+действий. В примере этими действиями будут: выполнения запроса и
+получения результата, выполнения скрипта на языке 1С и получение
+результата, а также - вызов произвольного метода с передачей параметров
+и получением результата. Также необходимо обеспечить возможность
+передачи сложных типов.</p>
+<p><strong>Инструментарий</strong></p>
+<p>&nbsp;</p>
+<p>В качестве инструментов для создания примера понадобятся:</p>
+<ol>
+<li>1С 8.1 (две базы с одинаковой конфигурацией, не связаннные планом обмена, имитирующие две разнородные системы)</li>
+<li>.NET 3.5 SP1 + Sharpdevelop 3.1 (можно заменить на VisualStudio)</li>
+<li>Netbeans 6.5.1 + OpenESB 2.1 + жаба современного образца.</li>
+</ol>
+<p>&nbsp;</p>
+<p><strong>Тонкости с типами</strong></p>
+<p>&nbsp;</p>
+<p>Забегая вперед, рассмотрим один тонкий момент: при любом
+взаимодействие всегда надо обеспечить передачу данных в формате,
+понятным обеим сторонам. В 1С большую часть работы в этом плане за нас
+сделает СериализаторXDTO. Но есть ряд тонкостей:</p>
+<p><br><span style="white-space: pre;"> </span>1. Получение информации о принадлежности данного конкретного значения тому или иному типу.&nbsp;<br><br><span style="white-space: pre;"> </span>&nbsp;&nbsp;&nbsp;
+Казалось бы все просто, все пользовались
+ТипЗнч(&lt;значение&gt;),&nbsp; но попробуйте выполнить простую строку:<br><br><strong>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; </strong><span style="white-space: pre;"><strong> </strong></span><strong>ТипЗнч("ЙЦУКЕН");</strong><br><br>&nbsp;&nbsp;&nbsp; <span style="white-space: pre;"> </span>&nbsp;&nbsp; &nbsp;ой, а это что такое:<br><br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;<span style="white-space: pre;"> </span><strong>Встроенная функция может быть использована только в выражении. (ТипЗнч)<br>&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; </strong><span style="white-space: pre;"><strong> </strong></span><strong>&nbsp;ТипЗнч&lt;&gt;("ЙЦУКЕН");</strong><br><br>&nbsp;&nbsp;&nbsp; <span style="white-space: pre;"> </span>&nbsp;&nbsp;&nbsp;при попытке вызвать ее через COM эффект будет не лучше.</p>
+<p><span style="white-space: pre;"> </span>&nbsp;&nbsp;&nbsp;Вот почему
+не получится полностью обойтись без модификации конфигурации, хотя типы
+можно получить и из результата запроса:<br><strong>&nbsp;&nbsp;&nbsp;<span style="white-space: pre;"> </span> ВЫБРАТЬ 1, "А", Истина, Дата(1,1,1)</strong></p>
+<p><strong><span style="white-space: pre;"> </span><span style="font-weight: normal;">в этом случае доработка не требуется.</span></strong><br><br><span style="white-space: pre;"> </span>2. Отсутствие сериализации в XML универсальных коллекций штатными средствами.<br>&nbsp;&nbsp;&nbsp; <span style="white-space: pre;"> </span>А ведь так хочется сделать метод, который бы возвращал/принимал массив чего-то там, и дергать его из внешней системы...<br>&nbsp;&nbsp;&nbsp;&nbsp;<br>Значит
+нужно обеспечить как минимум распознавание простых типов и
+универсальных коллекций (массив в данном примере) и их
+сериализацию/десериализацю. Со сложными типами проще - с элементом
+какого-нибудь справочника вполне управятся и штатные средства. При этом
+надо внести лишь минимальные дополнения в конфигурацию. Информация о
+типах потребуется в двух основных случаях - при формировании информации
+о типах колонок в ResultSet'е и при определении того, что значение
+относится к универсальной коллекции, все остальное будет отправляться в
+СериализоторXDTO.</p>
+<p>При этом в примере реализовано сразу несколько способов определения
+типов, например, определить тип колонки в результате запроса при
+наличии образцов типов можно так:</p>
+<p><span style="font-family: 'courier new'; color: rgb(0, 0, 255);"><span style="font-family: Verdana; color: rgb(0, 0, 0);"><br></span></span></p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">public Type GetColumType<span style="color: red;">(</span>int _index<span style="color: red;">)<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; object currentType <span style="color: red;">= </span>GetProperty<span style="color: red;">(<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>Invoke<span style="color: red;">(</span>GetProperty<span style="color: red;">(</span>result<span style="color: red;">, </span><span style="color: black;">"Колонки"</span><span style="color: red;">), </span><span style="color: black;">"Получить"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{_index}<span style="color: red;">),<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: black;">"ТипЗначения"<br>&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; </span><span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; try<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">if ((</span>bool<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>currentType<span style="color: red;">, </span><span style="color: black;">"СодержитТип"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{doubleType}<span style="color: red;">))<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>typeof<span style="color: red;">(</span>double<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">else if ((</span>bool<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>currentType<span style="color: red;">, </span><span style="color: black;">"СодержитТип"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{stringType}<span style="color: red;">))<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>typeof<span style="color: red;">(</span>string<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">else if ((</span>bool<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>currentType<span style="color: red;">, </span><span style="color: black;">"СодержитТип"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{boolType}<span style="color: red;">))<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>typeof<span style="color: red;">(</span>bool<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">else if ((</span>bool<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>currentType<span style="color: red;">, </span><span style="color: black;">"СодержитТип"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{dateType}<span style="color: red;">))<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>typeof<span style="color: red;">(</span>DateTime<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">else<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return null;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; finally <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Release<span style="color: red;">(</span>currentType<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; }</p>
+<p>&nbsp;</p>
+<p>В качестве примера использования, рассмотрим метод, возвращающий значение по индексу колонки, преобразованное в нужный формат:</p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">public object GetValueByIndex<span style="color: red;">(</span>int _index<span style="color: red;">)<br></span>{ <br><span style="color: red;"><span style="white-space: pre;"><span style="color: rgb(0, 0, 255);"> </span></span>if (</span>GetColumType<span style="color: red;">(</span>_index<span style="color: red;">) == null)<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>{ <br><span style="white-space: pre;"> </span>object o <span style="color: red;">= </span>Invoke<span style="color: red;">(</span>resultSet<span style="color: red;">, </span><span style="color: black;">"Получить"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{_index}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>o <span style="color: red;">= </span>GetObjectByRef<span style="color: red;">(</span>o<span style="color: red;">);<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return </span>OneCObjectToXML<span style="color: red;">(</span>o<span style="color: red;">);<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>} <br><span style="color: red;"><span style="white-space: pre;"><span style="color: rgb(0, 0, 255);"> </span></span>else<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>Invoke<span style="color: red;">(</span>resultSet<span style="color: red;">, </span><span style="color: black;">"Получить"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{_index}<span style="color: red;">);<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>} <br>}</p>
+<p>Как видно из кода, все довольно просто: определяется тип, если он
+примитивный, то значение возвращается как есть, а если нет - вызвается
+метод сериализующий значение в XML, рассмотрим его:</p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">public XmlElement OneCObjectToXML<span style="color: red;">(</span>object _o<span style="color: red;">)<br></span>{ <br><span style="color: red;"><span style="white-space: pre;"><span style="color: rgb(0, 0, 255);"> </span></span>if (</span>IsArray<span style="color: red;">(</span>_o<span style="color: red;">))<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>{ <br><span style="white-space: pre;"> </span>XmlDocument doc <span style="color: red;">= new </span>XmlDocument<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>XmlElement arrayElement <span style="color: red;">= </span>doc<span style="color: red;">.</span>CreateElement<span style="color: red;">(</span>OneCServiceArrayElement<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>doc<span style="color: red;">.</span>AppendChild<span style="color: red;">(</span>arrayElement<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>int count <span style="color: red;">= (</span>int<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>_o<span style="color: red;">, </span><span style="color: black;">"Количество"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; for (</span>int i<span style="color: red;">=</span><span style="color: black;">0</span><span style="color: red;">; </span>i<span style="color: red;">&lt;</span>count<span style="color: red;">; </span>i<span style="color: red;">++)<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; object item <span style="color: red;">= </span>Invoke<span style="color: red;">(</span>_o<span style="color: red;">, </span><span style="color: black;">"Получить"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{i}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; if (</span>item !<span style="color: red;">= null)<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; XmlElement itemElement <span style="color: red;">= </span>doc<span style="color: red;">.</span>CreateElement<span style="color: red;">(</span>OneCServiceArrayElement<span style="color: red;">+</span><span style="color: black;">"-item"</span><span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>arrayElement<span style="color: red;">.</span>AppendChild<span style="color: red;">(</span>itemElement<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>XmlElement itemValueElement <span style="color: red;">= </span>OneCObjectToXML<span style="color: red;">(</span>GetObjectByRef<span style="color: red;">(</span>item<span style="color: red;">));<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>itemElement<span style="color: red;">.</span>AppendChild<span style="color: red;">(</span>doc<span style="color: red;">.</span>ImportNode<span style="color: red;">(</span>itemValueElement<span style="color: red;">, true));<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return </span>doc<span style="color: red;">.</span>DocumentElement<span style="color: red;">;<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>} <br><span style="color: red;"><span style="white-space: pre;"><span style="color: rgb(0, 0, 255);"> </span></span>else<br></span><span style="white-space: pre;"><span style="color: rgb(255, 0, 0);"> </span></span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; object writeXml <span style="color: red;">= </span>Invoke<span style="color: red;">(</span>connection<span style="color: red;">, </span><span style="color: black;">"NewObject"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span><span style="color: black;">"ЗаписьXML"</span>}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; try<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Invoke<span style="color: red;">(</span>writeXml<span style="color: red;">, </span><span style="color: black;">"УстановитьСтроку"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>Invoke<span style="color: red;">(</span>xdtoSer<span style="color: red;">, </span><span style="color: black;">"ЗаписатьXML"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{writeXml<span style="color: red;">, </span>_o}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span><span style="color: green;">//Заполнем буфер текстом xml представления 1с'овского объекта<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>string xmlString <span style="color: red;">= (</span>string<span style="color: red;">)</span>Invoke<span style="color: red;">(</span>writeXml<span style="color: red;">, </span><span style="color: black;">"Закрыть"</span><span style="color: red;">, new </span>object<span style="color: red;">[] </span>{}<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>using <span style="color: red;">(</span>StringReader sr <span style="color: red;">= new </span>StringReader<span style="color: red;">(</span>xmlString<span style="color: red;">))<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; XmlDocument doc <span style="color: red;">= new </span>XmlDocument<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>doc<span style="color: red;">.</span>Load<span style="color: red;">(</span>sr<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; return </span>doc<span style="color: red;">.</span>DocumentElement<span style="color: red;">;<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; } <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; finally <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Release<span style="color: red;">(</span>writeXml<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>} <br><span style="white-space: pre;"> </span>} <br>}</p>
+<p><span style="font-family: 'courier new'; color: rgb(0, 0, 255);"><br></span></p>
+<p>Как видно из кода, зесь же происходит обработка ситуации, когда надо сериализовать универсальную коллекцию.</p>
+<p>Также в примере используется и другие способы определния типов
+(вплоть до использования "is"), какой из них лучше - вопрос спорный.</p>
+<p>&nbsp;</p>
+<p><strong>Реализация</strong></p>
+<p>&nbsp;</p>
+<p>Ну а теперь, не отвлекаясь, можно рассмотреть собственно сервис. Начнем с интерфейса:</p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">&nbsp; &nbsp; <span style="color: red;">[</span>ServiceContract<span style="color: red;">(</span>Name<span style="color: red;">=</span><span style="color: black;">"onecservice"</span><span style="color: red;">, </span>Namespace<span style="color: red;">=</span><span style="color: black;">"http://onecservice"</span><span style="color: red;">)]<br>&nbsp; &nbsp; </span>public interface IOneCWebService <br>&nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">[</span>OperationContract<span style="color: red;">(</span>Name<span style="color: red;">=</span><span style="color: black;">"ExecuteRequest"</span><span style="color: red;">)]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>ResultSet ExecuteRequest<span style="color: red;">(</span>string _file<span style="color: red;">, </span>string _usr<span style="color: red;">, </span>string _pwd<span style="color: red;">, </span>string _request<span style="color: red;">);<br><br>&nbsp; &nbsp; &nbsp; &nbsp; [</span>OperationContract<span style="color: red;">(</span>Name<span style="color: red;">=</span><span style="color: black;">"ExecuteScript"</span><span style="color: red;">)]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>ResultSet ExecuteScript<span style="color: red;">(</span>string _file<span style="color: red;">, </span>string _usr<span style="color: red;">, </span>string _pwd<span style="color: red;">, </span>string _script<span style="color: red;">);<br><br>&nbsp; &nbsp; &nbsp; &nbsp; [</span>OperationContract<span style="color: red;">(</span>Name<span style="color: red;">=</span><span style="color: black;">"ExecuteMethodWithXDTO"</span><span style="color: red;">)]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>ResultSet ExecuteMethodWithXDTO<span style="color: red;">(</span>string _file<span style="color: red;">, </span>string _usr<span style="color: red;">, </span>string _pwd<span style="color: red;">, </span>string _methodName<span style="color: red;">, </span>XmlNode<span style="color: red;">[] </span>_parameters<span style="color: red;">);<br>&nbsp; &nbsp; </span>}</p>
+<p>&nbsp;</p>
+<p>Как видно из кода, данный интерфейс обеспечивает сервису заявленную
+универсальную функциональность: выполнение запроса, выполнения скрипта,
+и выполнения метода с параметрами, которые могут быть сложными типами.
+Также все методы возвращают универсальный результат, расммотрим его:</p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;">&nbsp; &nbsp; public class Value : IXmlSerializable <br>&nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; private XmlNode anyElement<span style="color: red;">;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public XmlNode AnyElement <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get { <span style="color: red;">return </span>anyElement<span style="color: red;">; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; set { anyElement <span style="color: red;">= </span>value<span style="color: red;">; </span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; public XmlSchema GetSchema<span style="color: red;">()<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">return null;<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>} <br><br>&nbsp; &nbsp; &nbsp; &nbsp; public void ReadXml<span style="color: red;">(</span>XmlReader reader<span style="color: red;">)<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; XmlDocument document <span style="color: red;">= new </span>XmlDocument<span style="color: red;">();<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </span>anyElement <span style="color: red;">= </span>document<span style="color: red;">.</span>ReadNode<span style="color: red;">(</span>reader<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>} <br><br>&nbsp; &nbsp; &nbsp; &nbsp; public void WriteXml<span style="color: red;">(</span>XmlWriter writer<span style="color: red;">)<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; anyElement<span style="color: red;">.</span>WriteTo<span style="color: red;">(</span>writer<span style="color: red;">);<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>} <br>&nbsp; &nbsp; } <br><br>&nbsp; &nbsp; <span style="color: red;">[</span>DataContract<span style="color: red;">(</span>Namespace<span style="color: red;">=</span><span style="color: black;">"http://onecservice/types"</span><span style="color: red;">)]<br>&nbsp; &nbsp; </span>public class Row <br>&nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; private List<span style="color: red;">&lt;</span>XmlNode<span style="color: red;">&gt; </span>values <span style="color: red;">= new </span>List<span style="color: red;">&lt;</span>XmlNode<span style="color: red;">&gt;();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public List<span style="color: red;">&lt;</span>XmlNode<span style="color: red;">&gt; </span>ValuesList <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return values<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">[</span>DataMember<span style="color: red;">]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public XmlNode<span style="color: red;">[] </span>Values <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return values<span style="color: red;">.</span>ToArray<span style="color: red;">();</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; set {} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br>&nbsp; &nbsp; } <br><br>&nbsp; &nbsp; <span style="color: red;">[</span>DataContract<span style="color: red;">(</span>Namespace<span style="color: red;">=</span><span style="color: black;">"http://onecservice/types"</span><span style="color: red;">)]<br>&nbsp; &nbsp; </span>public class ResultSet <br>&nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; private List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt; </span>columnNames <span style="color: red;">= new </span>List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt;();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>private List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt; </span>columnTypes <span style="color: red;">= new </span>List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt;();<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>private List<span style="color: red;">&lt;</span>Row<span style="color: red;">&gt; </span>rows <span style="color: red;">= new </span>List<span style="color: red;">&lt;</span>Row<span style="color: red;">&gt;();<br><br>&nbsp; &nbsp; &nbsp; &nbsp; </span>private string&nbsp;&nbsp; error <span style="color: red;">= </span><span style="color: black;">""</span><span style="color: red;">;<br><br>&nbsp; &nbsp; &nbsp; &nbsp; [</span>DataMember<span style="color: red;">]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public string Error <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return error<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; set {error <span style="color: red;">= </span>value<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">[</span>DataMember<span style="color: red;">]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt; </span>ColumnNames <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return columnNames<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">[</span>DataMember<span style="color: red;">]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public List<span style="color: red;">&lt;</span>string<span style="color: red;">&gt; </span>ColumnTypes <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return columnTypes<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; <span style="color: red;">[</span>DataMember<span style="color: red;">]<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>public List<span style="color: red;">&lt;</span>Row<span style="color: red;">&gt; </span>Rows <br>&nbsp; &nbsp; &nbsp; &nbsp; { <br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; get {return rows<span style="color: red;">;</span>} <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br><br>&nbsp; &nbsp; &nbsp; &nbsp; public ResultSet<span style="color: red;">()<br>&nbsp; &nbsp; &nbsp; &nbsp; </span>{ <br>&nbsp; &nbsp; &nbsp; &nbsp; } <br>&nbsp; &nbsp; }</p>
+<p>&nbsp;</p>
+<p>Как видно из кода, универсальный результат может содержать как
+данные произвольного типа, так и метаданные в виде названия и простого
+текстового описания типа, также возможно хранения сообщения об ошибке.
+Собственно код реализующий функциональность сервиса здесь
+рассматриваться не будет, он приведен в архиве.</p>
+<p>&nbsp;</p>
+<p>Рассмотрим также изменения, которые необходимо внести в конфигурацию 1С:</p>
+<p>&nbsp;</p>
+<p style="color: blue; font-family: courier new,courier; text-align: left;"><span style="color: red;"><span style="white-space: pre;"> </span>Функция </span>ПринадлежитТипу<span style="color: red;">(</span>значение<span style="color: red;">, </span>тип<span style="color: red;">) Экспорт<br>&nbsp; &nbsp; <span style="white-space: pre;"> </span>Возврат </span>тип <span style="color: red;">= </span>ТипЗнч<span style="color: red;">(</span>значение<span style="color: red;">);<br><span style="white-space: pre;"> </span>КонецФункции<br><br><span style="white-space: pre;"> </span>Функция </span>ВыполнитьСтроку<span style="color: red;">(</span>стр<span style="color: red;">) Экспорт<br>&nbsp; &nbsp; <span style="white-space: pre;"> </span></span>результат <span style="color: red;">= Неопределено;<br>&nbsp; &nbsp; <span style="white-space: pre;"> </span>Выполнить </span>стр<span style="color: red;">;<br>&nbsp; &nbsp; <span style="white-space: pre;"> </span>Возврат </span>результат<span style="color: red;">;<br><span style="white-space: pre;"> </span>КонецФункции</span></p>
+<p>&nbsp;</p>
+<p>Две базы 1С с соотвествующими изменениями в конфигурации и тестовым справочником приведены в архиве.</p>
+<p>Таким образом у нас есть адаптированная конфигурация 1С и сервис,
+через который к ней можно достучаться откуда угодно.&nbsp; Собственно,
+результаты полученные на данном шаге уже имеют самостоятельную
+ценность, так как позволяют, например, выполнить запрос аля <strong>ВЫБРАТЬ * Из .... </strong>&nbsp;откуда угодно, например из веб приложения написанного на RoR'е.</p>
+<p>Переходим к созданию так называемого композитного приложения,
+которое будет развернуто в OpenESB. В данное приложение будет входить
+один BPEL модуль, в котором будут располагаться несколько BPEL
+процессов, каждый из которых будет иллюстрировать работу с тем или иным
+методом сервиса OneCService. Там же будут располагаться wsdl,
+описывающий интерфейс OneCServic'а, а также wsdl'и описывающие точки
+входа BPEL процессов и xsd, описывающите типы данных. В композитном
+приложении будут созданы несколько тестов, которые сводятся к
+формированию запроса к тому или иному BPEL процессу и проверке на
+ожидаемый результат. Такая организация позволит разбить приложение на
+несколько небольших и понятных частей. Рассмотрим примеры этих частей
+более подробно.</p>
+<p>&nbsp;</p>
+<p>В качестве примера BPEL процесса рассмотрим процесс, выполняющий
+запрос к 1С и возвращающий его результат, упакованный в ResultSet:</p>
+<p>&nbsp;</p>
+<p><img title="bpel" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/96dc883258f0.jpg" alt="bpel" height="389" width="640"></p>
+<p>&nbsp;</p>
+<p>Множество модулей и сервисов, объединенных в одно композитной приложения образуют сборку сервисов:</p>
+<p>&nbsp;</p>
+<p><img title="assembly" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/9c6b082ff7eb.jpg" alt="assembly" height="389" width="640"></p>
+<p>&nbsp;</p>
+<p>Теперь рассмотрим более сложный пример в комлпексе - обмен данными между двумя базами 1С. BPEL процесс имеет вид:</p>
+<p>&nbsp;</p>
+<p><img title="exchange" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/787d32d5162e.jpg" alt="exchange" height="389" width="640"></p>
+<p>&nbsp;</p>
+<p>Как видим, здесь происходит сначала обращение к первой базе 1С
+("ПолучитьСотрудников"), а потом ко второй ("ЗаписатьСотрудников").
+Данные передаются в массиве, также здесь выполняется XSL преобразование
+чтобы извлечь массив из ResultSet'а, полученного в результате обращения
+к первой базе, для его последующей передачи во вторую базу.</p>
+<p>&nbsp;</p>
+<p>Видео, иллюстрирущее работу схемы лежит здесь&nbsp;<a href="http://www.youtube.com/watch?v=NlvsvRpDf5o">http://www.youtube.com/watch?v=NlvsvRpDf5o</a>&nbsp;,
+в нем также демонстрируется пример пошаговой отладки BPEL процесса
+(пользуемся кнопочкой HD, так хоть что-то можно разглядеть).</p>
+<p>Исходники композитного приложения также приведен в архиве.</p>
+<p>&nbsp;</p>
+<p><strong>Недостатки примера<br><br></strong><span style="white-space: pre;"> </span>1. Работа только с файловыми базой 1С.<br><span style="white-space: pre;"> </span>2. Костыль для работы с типами (возможно я чего-то не понял).</p>
+<p>&nbsp;</p>
+<p><strong>Что можно улучшить</strong></p>
+<p><span style="white-space: pre;"> </span>1. Добавить поддержку SQL баз.<br><span style="white-space: pre;"> </span>2. Попытаться реализовать в поддержку транзакции средствами WCF и их приземление на 1С (не знаю насколько реально).<br><span style="white-space: pre;"> </span>3. Возможно стоит переработать ResultSet.<br><span style="white-space: pre;"> </span>4. Сделать возможность приземлять в 1С произвольные типы, объявленные во внешних схемах, добавленных в "Пакеты XDTO".<br><br><strong></strong></p>
+<p><strong>1C 8.2, Linux и Native API</strong></p>
+<p>Собственно соображение тут только одно: заменить WCF на Axis2/C
+(&nbsp;http://ws.apache.org/axis2/c&nbsp;) и переписать все на С++.</p>
+<p>&nbsp;</p>
+<p>Архив лежит здесь:&nbsp;<a href="http://infostart.ru/projects/5333/">http://infostart.ru/projects/5333/</a></p>
+<p><br>P. S. Как обычно, жду конструктивной критики и вопросов.&nbsp;А
+вообще, чем больше копаю, тем больше прихожу к выводу, что "адынэс
+рулЕз" :)</p>
+<p>P.P.S. Для тех кто хочет заглянуть чуть-чуть в будущее:&nbsp;<a href="http://wiki.open-esb.java.net/attach/FujiScreenCastsDemos/Fuji-overview-0629.pdf">http://wiki.open-esb.java.net/attach/FujiScreenCastsDemos/Fuji-overview-0629.pdf</a>&nbsp; , хотя Фуджи пока на редкость глюкава и неустойчива.&nbsp;</p>
+<p><a href="http://infostart.ru/public/edit/?id=21506" class="tool edit info">Редактировать</a></p>
+        <p style="color: rgb(153, 0, 0);" class="info">
+Самый простой способ сделать скриншот, это нажать клавишу PrintScreen
+на клавиатуре, открыть Пуск -&gt; Программы -&gt; Стандартные -&gt;
+Paint, вставить рисунок из буфера (Ctrl+V), сохранить в файл в формате
+PNG.<br>
+        </p>
+
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21506#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21506#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+         <div class="object_image_detail_empty">
+            <p style="color: rgb(153, 0, 0);"><a href="http://infostart.ru/public/edit/?id=21506#obj_pics" class="info">Добавить изображение</a></p>
+         </div>
+
+
+<div class="obj_info">
+    <span class="tool star">10</span>
+    <a href="http://infostart.ru/public/21506/?rate=1" class="tool plus" onclick="infostart_rate(21506, 1); return false;" title="Поставить плюс">Рекомендую</a>
+    <a href="http://infostart.ru/public/21506/?rate=-1" class="tool minus" onclick="infostart_rate(21506, -1); return false;" title="Поставить минус">Не тратить время</a>
+	<a href="http://infostart.ru/public/21506/?print=Y" class="tool info print">Версия для печати</a>
+</div>
+
+<br>
+
+
+    <h3 class="paragraph clleft" id="comm">Комментарии  (10)</h3>
+
+    <div class="obj_info isright">
+        <a href="#author_info" class="tool info backup">В начало публикации</a>
+    </div>
+    <p>
+            <a href="http://infostart.ru/public/21506/?ordercomm=direct" title="сверху вниз" class="tool info sort_asc">Вкл. прямой порядок комментариев</a>
+        </p>
+    
+                    <br clear="all">
+            <script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/script_004.js" type="text/javascript"></script><script type="text/javascript">
+var smallEngLettersReg = new Array(/e'/g, /ch/g, /sh/g, /yo/g, /jo/g, /zh/g, /yu/g, /ju/g, /ya/g, /ja/g, /a/g, /b/g, /v/g, /g/g, /d/g, /e/g, /z/g, /i/g, /j/g, /k/g, /l/g, /m/g, /n/g, /o/g, /p/g, /r/g, /s/g, /t/g, /u/g, /f/g, /h/g, /c/g, /w/g, /~/g, /y/g, /'/g);
+var smallRusLetters = new Array("э", "ч", "ш", "ё", "ё", "ж", "ю", "ю", "я", "я", "а", "б", "в", "г", "д", "е", "з", "и", "й", "к", "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "щ", "ъ", "ы", "ь");
+
+var capitEngLettersReg = new Array(
+	/Ch/g, /Sh/g, 
+	/Yo/g, /Zh/g, 
+	/Yu/g, /Ya/g, 
+	/E'/g, /CH/g, /SH/g, /YO/g, /JO/g, /ZH/g, /YU/g, /JU/g, /YA/g, /JA/g, /A/g, /B/g, /V/g, /G/g, /D/g, /E/g, /Z/g, /I/g, /J/g, /K/g, /L/g, /M/g, /N/g, /O/g, /P/g, /R/g, /S/g, /T/g, /U/g, /F/g, /H/g, /C/g, /W/g, /Y/g);
+var capitRusLetters = new Array(
+	"Ч", "Ш",
+	"Ё", "Ж",
+	"Ю", "Я",
+	"Э", "Ч", "Ш", "Ё", "Ё", "Ж", "Ю", "Ю", "\Я", "\Я", "А", "Б", "В", "Г", "Д", "Е", "З", "И", "Й", "К", "Л", "М", "Н", "О", "П", "Р", "С", "Т", "У", "Ф", "Х", "Ц", "Щ", "Ы");
+
+var smallRusLettersReg = new Array(/э/g, /ч/g, /ш/g, /ё/g, /ё/g,/ж/g, /ю/g, /ю/g, /я/g, /я/g, /а/g, /б/g, /в/g, /г/g, /д/g, /е/g, /з/g, /и/g, /й/g, /к/g, /л/g, /м/g, /н/g, /о/g, /п/g, /р/g, /с/g, /т/g, /у/g, /ф/g, /х/g, /ц/g, /щ/g, /ъ/g, /ы/g, /ь/g );
+var smallEngLetters = new Array("e", "ch", "sh", "yo", "jo", "zh", "yu", "ju", "ya", "ja", "a", "b", "v", "g", "d", "e", "z", "i", "j", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "h", "c", "w", "~", "y", "'");
+
+var capitRusLettersReg = new Array(
+	/Ч(?=[^А-Я])/g, /Ш(?=[^А-Я])/g, 
+	/Ё(?=[^А-Я])/g, /Ж(?=[^А-Я])/g, 
+	/Ю(?=[^А-Я])/g, /Я(?=[^А-Я])/g, 
+	/Э/g, /Ч/g, /Ш/g, /Ё/g, /Ё/g, /Ж/g, /Ю/g, /Ю/g, /Я/g, /Я/g, /А/g, /Б/g, /В/g, /Г/g, /Д/g, /Е/g, /З/g, /И/g, /Й/g, /К/g, /Л/g, /М/g, /Н/g, /О/g, /П/g, /Р/g, /С/g, /Т/g, /У/g, /Ф/g, /Х/g, /Ц/g, /Щ/g, /Ъ/g, /Ы/g, /Ь/g);
+var capitEngLetters = new Array(
+	"Ch", "Sh",
+	"Yo", "Zh",
+	"Yu", "Ya",
+	"E", "CH", "SH", "YO", "JO", "ZH", "YU", "JU", "YA", "JA", "A", "B", "V", "G", "D", "E", "Z", "I", "J", "K", "L", "M", "N", "O", "P", "R", "S", "T", "U", "F", "H", "C", "W", "~", "Y", "'");
+
+</script><a name="postform"></a>
+
+<div class="comment_line">
+
+	<p class="info">При ответе на комментарий, указывайте его номер в круглых скобках, например, (1).</p>
+
+
+<form name="REPLIER" id="REPLIER" action="/public/21506/#postform" method="POST" enctype="multipart/form-data" onsubmit="return ValidateForm(this, 'Y');" onkeydown="if(null != init_form){init_form(this)}" onmouseover="if(init_form){init_form(this)}" class="forum-form">
+	<input name="PAGE_NAME" value="message" type="hidden">
+	<input name="FID" value="24" type="hidden">
+	<input name="TID" value="26022" type="hidden">
+	<input name="MID" value="0" type="hidden">
+	<input name="MESSAGE_TYPE" value="REPLY" type="hidden">
+	<input name="AUTHOR_ID" value="" type="hidden">
+	<input name="forum_post_action" value="save" type="hidden">
+	<input name="MESSAGE_MODE" value="NORMAL" type="hidden">
+	
+	<div class="forum-reply-fields">
+
+		<div class="forum-reply-field forum-reply-field-bbcode">
+
+			<div class="forum-bbcode-line" id="forum_bbcode_line">
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-bold" id="form_b" title="Полужирный (alt+b)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-italic" id="form_i" title="Курсив (alt+i)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-underline" id="form_u" title="Подчеркнутый (alt+u)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-strike" id="form_s" title="Перечеркнутый (alt+s)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-quote" id="form_quote" title="Оформление текста в виде цитаты (alt+q)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-code" id="form_code" title="Оформление текста в виде кода (alt+p)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-url" id="form_url" title="Ввод гиперссылки (alt+h)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-img" id="form_img" title="Подключение изображения (alt+g)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-video" id="form_video" title="Подключение видео (alt+v)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-list" id="form_list" title="Оформление текста в виде списка (alt+l)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-color" id="form_palette" title="Цвет">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<a href="#postform" class="forum-bbcode-button forum-bbcode-translit" id="form_translit" title="Перекодировка транслит/латиница (alt+t)">
+					<img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/empty_for_ie.gif"></a>
+				<select name="FONT" class="forum-bbcode-font" id="form_font" title="Шрифт">
+					<option selected="selected" value="none">Шрифт</option>
+					<option value="Arial" style="font-family: Arial;">Arial</option>
+					<option value="Times" style="font-family: Times;">Times</option>
+					<option value="Courier" style="font-family: Courier;">Courier</option>
+					<option value="Impact" style="font-family: Impact;">Impact</option>
+					<option value="Geneva" style="font-family: Geneva;">Geneva</option>
+					<option value="Optima" style="font-family: Optima;">Optima</option>
+					<option value="Verdana" style="font-family: Verdana;">Verdana</option>
+				</select>
+			</div>
+<script>
+document.write('<style>div.forum-smiles-corrected{height:16px; overflow:hidden;}</style>');
+document.write('<style>div.forum-smiles-none{visibility:hidden;}</style>');
+</script><style>div.forum-smiles-corrected{height:16px; overflow:hidden;}</style><style>div.forum-smiles-none{visibility:hidden;}</style>
+			<div class="forum-clear-float"></div><div class="forum-smiles-line forum-smiles-corrected " id="forum_smiles_line">
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_biggrin.gif" class="smiles" alt=":D" title="Широкая улыбка" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_idea.gif" class="smiles" alt=":idea:" title="Идея" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_question.gif" class="smiles" alt=":?:" title="Вопрос" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_exclaim.gif" class="smiles" alt=":!:" title="Восклицание" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_wink.gif" class="smiles" alt=";)" title="Шутливо" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_evil.gif" class="smiles" alt=":evil:" title="Со злостью" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_cry.gif" class="smiles" alt=":cry:" title="Очень грустно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_redface.gif" class="smiles" alt=":oops:" title="Смущенно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_kiss.gif" class="smiles" alt=":{}" title="Поцелуй" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_cool.gif" class="smiles" alt="8-)" title="Здорово" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_eek.gif" class="smiles" alt=":o" title="Удивленно" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_sad.gif" class="smiles" alt=":(" title="Печально" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_smile.gif" class="smiles" alt=":)" title="С улыбкой" border="0" height="16" width="16"></a></span>
+				<span class="forum-smiles-item" style="height: 16px;"><a href="#postform" name="smiles" style="margin-top: 0px;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_neutral.gif" class="smiles" alt=":|" title="Скептически" border="0" height="16" width="16"></a></span>
+			</div>
+<script>
+document.write('<div class="forum-reply-field forum-reply-field-showsmiles" id="forum_smile_switcher" style="visibility:hidden;">');
+document.write('<a href="#postform" id="form_smiles_dinamic">Еще</a></div>');
+jsUtils.addEvent(window, "load", function(e){ForumShowSmile(e)});
+function ForumShowSmile(e)
+{
+	var sIndex = '';
+	var form = document.forms["REPLIER"];
+	var forum_bbcode_line = document.getElementById('forum_bbcode_line');
+	var forum_smiles_line = document.getElementById('forum_smiles_line');
+	var forum_smile_switcher = document.getElementById('forum_smile_switcher');
+	var params = {'width' : form.POST_MESSAGE.offsetWidth, 'width_real' : 0};
+	var res = forum_smiles_line.getElementsByTagName('A');
+	if (res && res.length > 0)
+	{
+		for (var ii = 0; ii < res.length; ii++)
+		{
+			params['width_real'] += parseInt(res[ii].parentNode.offsetWidth);
+		}
+	}
+	if (params['width'] >= params['width_real'])
+	{
+		var res = document.createElement('DIV');
+		res.className = "forum-clear-float";
+		forum_smiles_line.parentNode.insertBefore(res, forum_smiles_line);
+	}
+	if (((params['width'] - forum_bbcode_line.offsetWidth) >= params['width_real']) ||
+		params['width'] >= params['width_real'])
+	{
+		forum_smile_switcher.style.display = 'none';
+		forum_smiles_line.className = forum_smiles_line.className.replace('forum-smiles-none', '');
+		return true;
+	}
+	init_form(form);
+	oForumForm[form.id].show_smiles_dinamic(forum_smile_switcher.firstChild, '', 'N');
+	forum_smiles_line.className = forum_smiles_line.className.replace(/forum\-smiles\-none/gi, '');
+	forum_smile_switcher.style.visibility = 'visible';
+}
+</script><div class="forum-reply-field forum-reply-field-showsmiles" id="forum_smile_switcher" style="visibility: hidden; display: none;"><a href="#postform" id="form_smiles_dinamic">Еще</a></div>
+			<div class="forum-clear-float"></div>
+		</div>
+		<div class="forum-reply-field forum-reply-field-text">
+			<textarea name="POST_MESSAGE" class="post_message" cols="55" rows="7" tabindex="10"></textarea>
+		</div>
+		<div class="forum-reply-field forum-reply-field-upload">
+			<div class="forum-upload-info" style="display: none;" id="upload_files_info_">
+				<span>Размер файла не должен превышать 47.68 МБ.</span>
+			</div>
+
+			<div class="forum-upload-file" style="display: none;" id="upload_files_0_">
+				<input name="FILE_NEW_0" value="" size="30" type="file">
+			</div>
+
+			<div class="forum-upload-file" style="display: none;" id="upload_files_1_">
+				<input name="FILE_NEW_1" value="" size="30" type="file">
+			</div>
+			<a href="javascript:void(0);" onclick="AttachFile('0', '2', '', this); return false;">
+				<span>Прикрепить файл</span>
+			</a>
+		</div>
+		<div class="forum-reply-field forum-reply-field-settings">
+			<div class="forum-reply-field-setting">
+				<input name="USE_SMILES" id="USE_SMILES" value="Y" checked="checked" tabindex="11" type="checkbox">&nbsp;<label for="USE_SMILES">Показывать графические смайлы в этом сообщении</label></div>
+		</div>
+		<div class="forum-reply-buttons">
+			<input name="send_button" value="Ответить" tabindex="12" onclick="this.form.MESSAGE_MODE.value = 'NORMAL';" type="submit">
+			&nbsp;&nbsp;
+							<a href="http://infostart.ru/public/21506/?subscribe=Y&amp;sessid=807b51c29b14575d82428d5dbf7a3132" title="Получать уведомления на e-mail о новых комментариях">Подписаться на новые комментарии</a>
+					</div>
+
+	</div>
+</form></div>
+
+<script type="text/javascript">
+function AttachFile(iNumber, iCount, sIndex, oObj)
+{
+	var element = null;
+	var bFined = false;
+	iNumber = parseInt(iNumber);
+	iCount = parseInt(iCount);
+
+	document.getElementById('upload_files_info_' + sIndex).style.display = 'block';
+	for (var ii = iNumber; ii < (iNumber + iCount); ii++)
+	{
+		element = document.getElementById('upload_files_' + ii + '_' + sIndex);
+		if (!element || typeof(element) == null)
+			break;
+		if (element.style.display == 'none')
+		{
+			bFined = true;
+			element.style.display = 'block';
+			break;
+		}
+	}
+	var bHide = (!bFined ? true : (ii >= (iNumber + iCount - 1)));
+	if (bHide == true)
+		oObj.style.display = 'none';
+}
+function AddTags(a)
+{
+	if (a != null)
+	{
+		var div = a.parentNode.previousSibling;
+		div.style.display = "block";
+		a.parentNode.style.display = "none";
+
+		var inputs = div.getElementsByTagName("INPUT");
+		for (var i = 0 ; i < inputs.length ; i++ )
+		{
+			if (inputs[i].type.toUpperCase() == "TEXT")
+			{
+				CorrectTags(inputs[i]);
+				inputs[i].focus();
+				break;
+			}
+		}
+	}
+
+	return false;
+}
+function CorrectTags(oObj)
+{
+	if (document.getElementById('TAGS_div_frame'))
+		document.getElementById('TAGS_div_frame').id = oObj.id + "_div_frame";
+}
+
+var bSendForm = false;
+if (typeof oErrors != "object")
+	var oErrors = {};
+oErrors['no_topic_name'] = "Вы должны ввести название темы. ";
+oErrors['no_message'] = "Вы должны ввести сообщение. ";
+oErrors['max_len'] = "Максимальная длина сообщения #MAX_LENGTH# символов. Всего символов: #LENGTH#.";
+oErrors['no_url'] = "Вы должны ввести адрес (URL)";
+oErrors['no_title'] = "Ведите название.";
+oErrors['no_path'] = "Укажите путь к видео.";
+if (typeof oText != "object")
+	var oText = {};
+oText['author'] = " пишет:\n";
+oText['enter_url'] = "Введите полный адрес (URL)";
+oText['enter_url_name'] = "Введите название сайта";
+oText['enter_image'] = "Введите полный адрес (URL) изображения";
+oText['list_prompt'] = "Введите пункт списка. Нажмите \'Отмена\' или оставьте пробел для завершения списка";
+oText['video'] = "Видео";
+oText['path'] = "Путь:";
+oText['width'] = "Ширина:";
+oText['height'] = "Высота:";
+
+oText['BUTTON_OK'] = "Вставить";
+oText['BUTTON_CANCEL'] = "Отмена";
+oText['smile_hide'] = "Скрыть";
+
+if (typeof oHelp != "object")
+	var oHelp = {};
+
+function reply2author(name)
+{
+		document.REPLIER.POST_MESSAGE.value += "[b]"+name+"[/b]"+" \n";
+		return false;
+}
+</script>        
+        
+        
+                                            <div class="comment_line">
+                <a name="comm287224"></a>
+                <span class="isleft">10.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287224" onclick="infostart_rate_comment(287224, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287224" onclick="infostart_rate_comment(287224, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">07.08.2009 15:55:35                                                                            <a href="http://infostart.ru/public/21506/?edit_comment=287224#postform">Редактировать</a>
+                                            </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=9" target="_blank" title="Комментарий #9" class="comment-ref">(9)</a>
+ну так схема типов 1С замечательно экспортируется в XSD, а вот в чем
+действительно проблема, так это в написании сложных преобразований в
+XSL, особенно если используются расширения - там черт ногу сломит.
+<br>
+<br>К тому же к OpenESB есть MSMQ адаптер вроде бы, а как организовать
+работу плана обмена через шину сообщений я в предыдущей статье уже
+описал ( <a href="http://infostart.ru/blogs/1178/" target="_blank" rel="nofollow">http://infostart.ru/blogs/1178/</a> ). Вариантов безусловно множество - у всех есть свои плюсы и минусы.
+<br>
+<br>Чем на мой взгляд хорош тот вариант который я здесь рассмотрел, так
+это тем, что количество телодвижений минимальное: написал функцию
+ПолучитьСотрудников, написал процедуру ЗаписатьСотрудников - и гоняй
+данные. По сути получился универсальный адаптер к 1С, который можно
+использовать откуда угодно. Более того, в огромном количестве случаев
+можно обойтись методом ExecuteRequest и значениями примитивных типов в
+ResultSet'е (все задачи по вытаскиванию данных из 1С).
+<br>
+<br>А для больших объемов все же наверное лучше использовать шины
+сообщений (MOM'ы - уже упомянутый мелкомягкий, всевозможные JMS'ы),
+разбивая поток на мелкие сообщения.
+<br>
+<br>
+<br>P.S. Как вылетает ошибка при одновременном поднятии большого
+количества экземпляров V8.Application я видел, но где-то до десятка
+вполне нормально работают.
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287223"></a>
+                <span class="isleft">9.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287223" onclick="infostart_rate_comment(287223, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287223" onclick="infostart_rate_comment(287223, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/77670/" class="tool user" title="zarucheisky">zarucheisky</a>
+                    <span class="info">07.08.2009 15:17:48                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=8" target="_blank" title="Комментарий #8" class="comment-ref">(8)</a> 
+<br>к <a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=6" target="_blank" title="Комментарий #6" class="comment-ref">(6)</a>
+<br>Правильно. Идеология ESB именно и состоит в том, что бы приложение
+не занималось преобразованием, но. Тогда транслятору в ESB (например,
+xalan) надо выдать схему данных и т.п. для преобразования. И на самом
+деле всё гораздо сложней. <br>
+<br><a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=7" target="_blank" title="Комментарий #7" class="comment-ref">(7)</a>
+Спорно. Опять же, 1С реализовало урезанное ws-поверх http со всеми
+отсюда вытекающими последствиями. Конечно, велик соблазн использовать
+встроенный механизм сервисов. Однако, и это можно объехать используя
+другие методы и средства, например ADODB в связке с MS SQL Server 2008
+Service Broker (MOM от Microsoft). Собственно, способов связать 1С с
+ESB много.
+<br>Вопрос только пристрастий. Я не сторонник множественных сессий,
+особливо в клиент-серверном варианте, может привести в некоторых
+случаях к утечке памяти и т.п. <br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287222"></a>
+                <span class="isleft">8.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287222" onclick="infostart_rate_comment(287222, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287222" onclick="infostart_rate_comment(287222, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">07.08.2009 11:43:55                                                                    </span>
+                    <div class="txt"><a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=6" target="_blank" title="Комментарий #6" class="comment-ref">(6)</a>
+Вопрос о формате/структуре данных он всегда первый, при любом обмене...
+Я склоняюсь к тому, чтобы использовать штатную сериализацию 1С, орудуя
+XSL'ем для преобразования. Да и сторонние типы, прописанные в XSD в 1С
+вроде бы можно прокинуть. <br>
+<br><a href="http://infostart.ru/ajax/show_comment.php?t=26022&amp;c=7" target="_blank" title="Комментарий #7" class="comment-ref">(7)</a>
+А таки есть альтернатива? По-моему уж лучше OLE + WCF чем встроенный
+движок веб сервисов 1С (я там прошлой зимой тааакие грабли видел....).
+Да и производительность поднять чуток можно, если на стороне сервиса
+сделать пул поднятых V8.Application (сохранив, разумеется, проверку
+пользователя и пароля, и установив ограничения по максимальному размеру
+пула). Хотя конечно, более точно можно будет сказать только после того,
+как устрою всему этому нагрузочные испытания. <br>
+<br>Ну и наконец, никто не мешает сделать индейскую хитрость - для
+большого потока данных (а это прежде всего обмен между 1С'ами по плану
+обмена) использовать обычную шину сообщений с каким-нибудь
+промежуточным ретранслятором/преобразователем (если потребуется), а для
+особо запущенных случаев, для координации и мелкого обмена, другими
+словами, для вещей которые обычно выходят за план обмена - ESB. <br>
+<br>А аудитория тут нормальная, просто немного вялая и не задававшаяся
+такими вопросами. И "адынэс рулЕз" на полном серьезе, особенно по
+сравнению с аналогами. <br>
+<br>P.S. Собственно, если в 8.2 будет нормальный движок сервисов и
+нормальное разведение по подсистемам типовых конфигураций, можно будет
+обойтись без всех этих извращений - сделать какую-нибудь универсальную
+нашлепку к той же торговле, и готово.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287221"></a>
+                <span class="isleft">7.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287221" onclick="infostart_rate_comment(287221, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287221" onclick="infostart_rate_comment(287221, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/77670/" class="tool user" title="zarucheisky">zarucheisky</a>
+                    <span class="info">06.08.2009 18:13:59                                                                    </span>
+                    <div class="txt">Ну и опять же, OLE... только слезли с этих граблей...</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287220"></a>
+                <span class="isleft">6.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287220" onclick="infostart_rate_comment(287220, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287220" onclick="infostart_rate_comment(287220, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/77670/" class="tool user" title="zarucheisky">zarucheisky</a>
+                    <span class="info">06.08.2009 18:12:20                                                                    </span>
+                    <div class="txt">Вы слишком много хотите от аудитории.
+<br>Я вот тоже сейчас ковыряю ESB и пришел к выводу, что для скрещивания
+<br>1С с любой ESB (будь то mule, OpenESB, wso2 или коммерческие), надо
+хорошо продумать представление данных, или... использовать родной
+формат, как в сообщениях обмена. Более того, можно создать нормальную
+удобоваримую xsd-схему типов, поскольку встроенное представляет собой
+нечто ужасное и неудобоваримое.</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287219"></a>
+                <span class="isleft">5.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287219" onclick="infostart_rate_comment(287219, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287219" onclick="infostart_rate_comment(287219, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">06.08.2009 10:39:58                                                                    </span>
+                    <div class="txt">мдя.... прошла неделя, три десятка скачиваний архива.... и не одного вопроса или попытки обсуждения
+<br>
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287218"></a>
+                <span class="isleft">4.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287218" onclick="infostart_rate_comment(287218, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287218" onclick="infostart_rate_comment(287218, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">31.07.2009 16:53:33                                                                    </span>
+                    <div class="txt">Вообще, основным наглядным материалом задумывалось видео, а скриншоты, чтобы сориентировать на что в видео обращать внимание. 
+<br>
+<br>Постараюсь сделать скриншоты побольше.
+<br></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287217"></a>
+                <span class="isleft">3.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287217" onclick="infostart_rate_comment(287217, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287217" onclick="infostart_rate_comment(287217, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/59432/" class="tool user" title="afanasko">afanasko</a>
+                    <span class="info">31.07.2009 16:49:14                                                                    </span>
+                    <div class="txt">Ступил. На Тубе можно же в fullscreen и в HD смотреть <img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/icon_smile.gif" alt="smile:-)" title="С улыбкой" border="0"></div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287216"></a>
+                <span class="isleft">2.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287216" onclick="infostart_rate_comment(287216, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287216" onclick="infostart_rate_comment(287216, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/59432/" class="tool user" title="afanasko">afanasko</a>
+                    <span class="info">31.07.2009 16:44:38                                                                    </span>
+                    <div class="txt">Очень
+интересная статья. Но, блин, скриншоты и видео на тубе мелковаты.
+Ничего не разглядеть ). Не мог бы ты выложить все это где-нибудь в
+более высоком разрешении?</div>
+                                                                                                </div>
+            </div>
+                                            <div class="comment_line">
+                <a name="comm287215"></a>
+                <span class="isleft">1.</span>
+                <div style="margin-left: 25px;">
+                    <div class="ratecomm">
+                        <a href="http://infostart.ru/public/21506/?crate=1&amp;cid=287215" onclick="infostart_rate_comment(287215, 1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/plus2.gif" alt="+"></a>
+                        <a href="http://infostart.ru/public/21506/?crate=-1&amp;cid=287215" onclick="infostart_rate_comment(287215, -1, 21506); return false;"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/minus2.gif" alt="-"></a>
+                    </div>
+                    <a href="http://infostart.ru/profile/67014/" class="tool author" title="mini_root">mini_root</a>
+                    <span class="info">30.07.2009 23:53:03                                                                    </span>
+                    <div class="txt">ээээх... опять все разъехалось...</div>
+                                                                                                </div>
+            </div>
+        
+            
+
+    
+
+    <div class="obj_info isright">
+        <a href="#author_info" class="tool info backup">В начало публикации</a>
+    </div>
+
+
+</div>
+
+</div>
+
+  <div id="side">
+ 
+
+
+
+
+
+
+    <script src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/script_005.js" type="text/javascript"></script><script language="JavaScript">
+<!--
+	var sonetDynevMsgGetPath = '/bitrix/components/bitrix/socialnetwork.events_dyn/get_message.php';
+	var sonetDynevMsgSetPath = '/bitrix/components/bitrix/socialnetwork.events_dyn/set_message.php';
+	var sonetDynevSessid = 'sessid=807b51c29b14575d82428d5dbf7a3132';
+	var sonetDynevUserId = 67014;
+	var sonetDynevTimeout = 40000;
+	var sonetDynevPath2User = '/profile/#user_id#/';
+	var sonetDynevPath2Group = '/community/groups/#group_id#/';
+	var sonetDynevPath2Message = '/profile/messages/chat/#user_id#/';
+	var sonetDynevPath2MessageMess = '/profile/messages/chat/#user_id#/';
+	var sonetDynevPath2Chat = '/profile/messages/chat/#user_id#/';
+	var sonetDynevCurPage = '/public/21506/index.php';
+	var sonetDynevCurParam = '';
+
+	var sonetDynevTrOnline = 'Сейчас на сайте';
+	var sonetDynevTrFrTitle = 'Приглашение дружить!';
+	var sonetDynevTrGrInv = 'Приглашает';
+	var sonetDynevTrGrTitle = 'Приглашение вступить в группу!';
+	var sonetDynevTrMsTitle = 'Вам сообщение!';
+//-->
+</script>
+
+<div id="sonet_events_err" class="errortext" style="display: none;">
+</div>
+
+<div id="sonet_events_fr" style="display: none;">
+	<div class="box">
+		<h2>Приглашение дружить!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_fr_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_fr_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    хочет добавить Вас в список своих друзей.
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_fr_message">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_fr_add" name="do_friend_add" value="Дружить" type="button">
+                    <input id="sonet_events_fr_reject" name="do_friend_reject" value="Отклонить" type="button">
+                </td>
+            </tr>
+            </tbody></table>
+		</div>            
+	</div>
+	<br>
+</div>
+
+<div id="sonet_events_gr" style="display: none;">
+	<div class="box">
+		<h2>Приглашение вступить в группу!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_gr_group" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_gr_message">
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_gr_add" name="do_friend_add" value="Принять" type="button">
+                    <input id="sonet_events_gr_reject" name="do_friend_reject" value="Отклонить" type="button">
+                </td>
+            </tr>
+            </tbody></table>
+		</div>            
+	</div>
+</div>
+
+<div id="sonet_events_ms" style="display: none;">
+
+	<div class="box">
+		<h2>Вам сообщение!</h2>
+		<div class="pad10">
+            <table class="sonet-user-profile-friend-box" border="0" width="100%">
+            <tbody><tr>
+                <td id="sonet_events_ms_sender" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td id="sonet_events_ms_date" align="center">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="sonet_events_ms_message"></div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <input id="sonet_events_ms_answer" name="do_message_answer" value="Ответить" type="button">
+                    <input id="sonet_events_ms_close" name="do_message_close" value="Закрыть" type="button">
+                    <span id="sonet_events_ms_ban">
+                        <br><br><a href="#" id="sonet_events_ms_ban_link">В черный список</a>
+                    </span>
+                </td>
+            </tr>
+            </tbody></table>
+    	</div>            
+	</div>
+</div>
+
+
+    <div id="menuaction" class="box">
+        <h2>Контекстное меню</h2>
+        <div class="pad10">
+            <ul>
+
+			                <div class="liner"></div>
+                <h3>Интеграция 1С с сервисной шиной OpenESB</h3>
+			
+			                
+                    <li><a href="http://infostart.ru/public/edit/?id=21506" hidefocus="true" title="Редактировать публикацию" class="tool info edit">Редактировать публикацию</a></li>
+
+                                            <li><a href="http://infostart.ru/public/21506/?hide_object=21506&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Скрыть публикацию в профайл" class="tool info hide">Снять с публикации</a></li>
+                    
+                    <li><a href="http://infostart.ru/public/?delete_object=21506&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Удаление без возврата" onclick="return confirm('Вы действительно хотите удалить данную запись?');" class="tool info del">Удалить публикацию</a></li>
+
+                    
+					  <!-- ВОТ ЗДЕСЬ ИЗМЕНИТЬ ПРИ ОТКРЫТИИ ГРУПП -->
+                                                    <div class="liner"></div>
+                            <li><a href="http://infostart.ru/public/21506/?create=group&amp;sessid=807b51c29b14575d82428d5dbf7a3132" hidefocus="true" title="Апгрейд публикации" class="tool info upgrade">Апгрейд публикации</a></li>
+                                            
+                    <div class="liner"></div>
+
+                
+
+                
+                <li><a href="http://infostart.ru/public/21506/#comm" class="tool info backdown">Перейти к комментариям</a></li>
+                                    <li><a href="http://infostart.ru/public/21506/?ordercomm=direct" title="сверху вниз" class="tool info sort_asc">Вкл. прямой порядок комментариев</a></li>
+                
+           
+			            </ul>
+        </div>
+    </div>
+        
+
+
+    <h3 class="paragraph">Оценка сообщества</h3>
+    <div>
+        <a style="color: rgb(255, 255, 255);" title="Плюс" href="http://infostart.ru/public/21506/?rate=1" onclick="infostart_rate(21506, 1); return false;" class="news_rate_page  rate_yell">10</a>
+        <p>
+    
+        <b>Поставьте плюс, если вы рекомендуете данную публикацию к прочтению и использованию.</b><br>
+        <span class="info">Плюс будет добавлять публикацию в <a href="http://infostart.ru/profile/favorites/">Мое избранное</a></span>.
+        
+        <br><br>
+        <a href="http://infostart.ru/public/21506/?rate=1" class="tool plus" onclick="infostart_rate(21506, 1); return false;">Рекомендую</a>
+        <a href="http://infostart.ru/public/21506/?rate=-1" class="tool minus" onclick="infostart_rate(21506, -1); return false;">Не тратить время</a>
+        <br>
+        <span class="info">Если рейтинг упадет до -5, то публикация автоматически удалится.</span>
+        </p>
+    </div>
+    
+
+
+        <div>
+        
+            <a name="users_raters"></a>
+            <b style="color: rgb(51, 204, 0);">Плюсы: (+10):</b>
+            <p>
+                                                                                    <a href="http://infostart.ru/profile/13529/" title="Дата голоса: 09.09.2009 06:28:22" class="tool user">ovv</a>
+                                    <a href="http://infostart.ru/profile/77670/" title="Дата голоса: 06.08.2009 18:25:05" class="tool user">zarucheisky</a>
+                                    <a href="http://infostart.ru/profile/25081/" title="Дата голоса: 05.08.2009 09:23:12" class="tool user">kell</a>
+                                    <a href="http://infostart.ru/profile/10604/" title="Дата голоса: 03.08.2009 09:09:16" class="tool user">desty</a>
+                                    <a href="http://infostart.ru/profile/26567/" title="Дата голоса: 02.08.2009 04:45:08" class="tool user">igorCool</a>
+                                    <a href="http://infostart.ru/profile/1630/" title="Дата голоса: 01.08.2009 12:58:50" class="tool user">JohnyDeath</a>
+                                    <a href="http://infostart.ru/profile/59432/" title="Дата голоса: 31.07.2009 16:39:15" class="tool user">afanasko</a>
+                                    <a href="http://infostart.ru/profile/53/" title="Дата голоса: 31.07.2009 10:47:03" class="tool user">support</a>
+                                    <a href="http://infostart.ru/profile/1746/" title="Дата голоса: 31.07.2009 10:45:03" class="tool user">steban</a>
+                                    <a href="http://infostart.ru/profile/1011/" title="Дата голоса: 30.07.2009 23:49:44" class="tool user">Tatitutu</a>
+                            </p>
+                                </div>
+    
+    <h3 class="paragraph">Лучшие публикации mini_root</h3>
+
+    <div class="block">
+    	        <p class="">
+            </p><div class="smallstar">29</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">10.07.2009 21:48:54</span> <span class="info">Статья</span> <br>
+                <a title="Организация обмена с помощью шины сообщений MSMQ" href="http://infostart.ru/public/21077/"><b>Организация обмена с помощью шины сообщений MSMQ</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Организация обмена с помощью шины сообщений MSMQ" href="http://infostart.ru/public/21077/#comm">комм(52)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">13</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">06.09.2009 21:11:18</span> <span class="info">Статья</span> <br>
+                <a title="Организация B2B интеграции с использованием 1С и JMS" href="http://infostart.ru/public/22184/"><b>Организация B2B интеграции с использованием 1С и JMS</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Организация B2B интеграции с использованием 1С и JMS" href="http://infostart.ru/public/22184/#comm">комм(8)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">10</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">30.07.2009 23:26:37</span> <span class="info">Статья</span> <br>
+                <a title="Интеграция 1С с сервисной шиной OpenESB" href="http://infostart.ru/public/21506/"><b>Интеграция 1С с сервисной шиной OpenESB</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Интеграция 1С с сервисной шиной OpenESB" href="http://infostart.ru/public/21506/#comm">комм(10)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">8</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">06.09.2009 21:08:35</span> <span class="info">Программа</span> <br>
+                <a title="Архив к статье &quot;Организация B2B интеграции с использованием 1С и JMS&quot;" href="http://infostart.ru/public/22183/"><b>Архив к статье "Организация B2B интеграции с использованием 1С и JMS"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                    <span class="tool comm"><a title="Архив к статье &quot;Организация B2B интеграции с использованием 1С и JMS&quot;" href="http://infostart.ru/public/22183/#comm">комм(5)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">8</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">30.07.2009 23:24:13</span> <span class="info">Программа</span> <br>
+                <a title="Архив к статье &quot;Интеграция 1С с сервисной шиной OpenESB&quot;" href="http://infostart.ru/public/21505/"><b>Архив к статье "Интеграция 1С с сервисной шиной OpenESB"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/67014/" title="mini_root">mini_root</a></span>
+                                            </div> 
+        
+	
+
+
+    <p>
+    <a href="http://infostart.ru/profile/67014/public/">Все публикации mini_root.</a>
+    </p>
+    </div>
+
+            <h3 class="paragraph">См. также:</h3>
+                                                        <a href="http://infostart.ru/public/?rubric=1996">ПРОГРАММИРОВАНИЕ</a> »
+                                        <a href="http://infostart.ru/public/?rubric=1596">Полезные технологии</a><br>
+            <div class="block">
+                	        <p class="">
+            </p><div class="smallstar">399</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">14.04.2009 03:06:05</span> <span class="info">Программа</span> <br>
+                <a title="Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)" href="http://infostart.ru/public/19633/"><b>Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/13819/" title="awa">awa</a></span>
+                                    <span class="tool comm"><a title="Tool_1CD. Программа просмотра файлов баз *.1CD (1Сv8.x)" href="http://infostart.ru/public/19633/#comm">комм(121)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">148</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">23.04.2009 01:50:40</span> <span class="info">Статья</span> <br>
+                <a title="Краткое описание формата файлов *.1CD (файловых баз 1Сv8)" href="http://infostart.ru/public/19734/"><b>Краткое описание формата файлов *.1CD (файловых баз 1Сv8)</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/13819/" title="awa">awa</a></span>
+                                    <span class="tool comm"><a title="Краткое описание формата файлов *.1CD (файловых баз 1Сv8)" href="http://infostart.ru/public/19734/#comm">комм(29)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">89</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">09.10.2006</span> <span class="info">Статья</span> <br>
+                <a title="Методическое пособие &quot;Основные объекты&quot;" href="http://infostart.ru/public/16908/"><b>Методическое пособие "Основные объекты"</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/1437/" title="GROOVY">GROOVY</a></span>
+                                    <span class="tool comm"><a title="Методическое пособие &quot;Основные объекты&quot;" href="http://infostart.ru/public/16908/#comm">комм(28)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">79</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">18.10.2008 12:16:50</span> <span class="info">Программа</span> <br>
+                <a title="Фоновое выполнение отчетов и обработок в 1С77" href="http://infostart.ru/public/16555/"><b>Фоновое выполнение отчетов и обработок в 1С77</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/1782/" title="maljaev">maljaev</a></span>
+                                    <span class="tool comm"><a title="Фоновое выполнение отчетов и обработок в 1С77" href="http://infostart.ru/public/16555/#comm">комм(24)</a></span>
+                                            </div> 
+        
+	        <p class="">
+            </p><div class="smallstar">67</div>
+            <div style="margin-left: 25px;" class=""> 
+                <span class="info">04.02.2009 22:46:27</span> <span class="info">Статья</span> <br>
+                <a title="Взлом сервера с помощью 1С:Предприятие 8.1" href="http://infostart.ru/public/18962/"><b>Взлом сервера с помощью 1С:Предприятие 8.1</b></a>
+                <span class="info">© <a href="http://infostart.ru/profile/180/" title="O-Planet">O-Planet</a></span>
+                                    <span class="tool comm"><a title="Взлом сервера с помощью 1С:Предприятие 8.1" href="http://infostart.ru/public/18962/#comm">комм(126)</a></span>
+                                            </div> 
+        
+	
+
+
+            </div>
+            
+
+  </div>
+
+  <div id="prefoot"> 
+   <div class="multiFeaturePromo"> 
+   <ul> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=15&amp;event1=banner&amp;event2=click&amp;event3=2+%2F+%5B15%5D+%5Br1%5D+%CD%EE%E2%E5%E9%F8%E8%E5+%EE%F2%F7%E5%F2%FB+7.7&amp;goto=%2Fpublic%2F13849%2F"><img alt="" title="" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/avatar_002.jpg" border="0" height="139" width="160"></a><h3 class="1c77"><a href="http://infostart.ru/bitrix/rk.php?id=15&amp;event1=banner&amp;event2=click&amp;event3=2+%2F+%5B15%5D+%5Br1%5D+%CD%EE%E2%E5%E9%F8%E8%E5+%EE%F2%F7%E5%F2%FB+7.7&amp;goto=%2Fpublic%2F13849%2F">Универсальный конструктор отчетов для 1С 7.7.</a></h3>
+<p>Любой отчёт – это таблица, состоящая из строк и колонок. Простейший
+способ узнать, какой отчёт вам нужен – это узнать, какие строки и
+колонки вас интересуют.
+<a href="http://infostart.ru/bitrix/rk.php?id=15&amp;event1=banner&amp;event2=click&amp;event3=2+%2F+%5B15%5D+%5Br1%5D+%CD%EE%E2%E5%E9%F8%E8%E5+%EE%F2%F7%E5%F2%FB+7.7&amp;goto=%2Fpublic%2F13849%2F">Подробнее.</a></p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F"><img alt="" title="" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/avatar.jpg" border="0" height="97" width="160"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F">Универсальная свертка Зарплата и Кадры 7.7(Свертка ЗиК 77)</a></h3>
+<p>При желании для проверки работоспособности можете прислать архив
+любой базы данных (не обязательно рабочей), результат свертки я вам
+отсылаю обратно.
+<a href="http://infostart.ru/bitrix/rk.php?id=26&amp;event1=banner&amp;event2=click&amp;event3=3+%2F+%5B26%5D+%5Br2%5D+%D1%E2%E5%F0%F2%EA%E0+%C7%E0%F0%EF%EB%E0%F2%FB+%E8+%CA%E0%E4%F0%FB&amp;goto=%2Fprojects%2F2139%2F">Подробнее.</a></p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F"><img alt="" title="" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/jm_logo.jpg" border="0" height="109" width="113"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F">Кто накосячил в базе 1С?</a></h3>
+<p>История изменений ДО РЕКВИЗИТА! ВОССТАНОВЛЕНИЕ объекта на дату!
+Быстрый поиск по журналу изменений. История по текущему объекту одним кликом.
+<a href="http://infostart.ru/bitrix/rk.php?id=28&amp;event1=banner&amp;event2=click&amp;event3=7+%2F+%5B28%5D+%5Br3%5D+%CA%F2%EE+%ED%E0%EA%EE%F1%FF%F7%E8%EB+%E2+%E1%E0%E7%E5+1%D1%3F&amp;goto=%2Fprojects%2F3112%2F">Подробнее.</a>
+</p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fpublic%2F62879%2F"><img alt="" title="" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/selection.jpg" border="0" height="100" width="100"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fprojects%2F62879%2F">Управленческий баланс</a></h3>
+<p>Интегральное решение для автоматизации управленческого учета, бюджетирования, учета по МСФО и консолидации данных.
+<a href="http://infostart.ru/bitrix/rk.php?id=63&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B63%5D+%5Br4%5D+%C8%D2%C0%CD%3A+%D3%EF%F0%E0%E2%EB%E5%ED%F7%E5%F1%EA%E8%E9+%E1%E0%EB%E0%ED%F1&amp;goto=%2Fprojects%2F62879%2F">Подробнее.</a></p></li> 
+    <li><a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=http%3A%2F%2Finfostart.ru%2Fpublic%2F63221%2F"><img alt="" title="" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/dog.jpg" border="0" height="100" width="100"></a><h3><a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=%2Fprojects%2F63221%2F">Робот-Администратор.</a></h3>
+<p>Предназначена для автоматического выполнения задач по обслуживанию
+баз данных "1С: Предприятие 8", которые обычно выполняются системным
+администратором вручную.
+<a href="http://infostart.ru/bitrix/rk.php?id=62&amp;event1=banner&amp;event2=click&amp;event3=19+%2F+%5B62%5D+%5Br5%5D+%C8%D2%C0%CD%3A+%D0%EE%E1%EE%F2-%C0%E4%EC%E8%ED%E8%F1%F2%F0%E0%F2%EE%F0&amp;goto=%2Fprojects%2F63221%2F">Подробнее.</a></p></li> 
+   </ul>
+   </div>
+  </div>
+
+  <div id="footer">
+    <ul id="footerLinks" class="clearit">
+      <li class="first">
+        <dl>
+          <dt>Все для 1С</dt>
+          <dd><a href="http://infostart.ru/">Популярные</a></dd>
+          <dd><a href="http://infostart.ru/public/">Все публикации</a></dd>
+          <dd><a href="http://infostart.ru/30days/">Топ за 30 дней</a></dd>
+          <dd><a href="http://infostart.ru/90days/">Топ за 90 дней</a></dd>
+          <dd><a href="http://infostart.ru/365days/">Топ за 365 дней</a></dd>
+        </dl>
+      </li>
+      <li>
+        <dl>
+          <dt>Еще</dt>
+          <dd><a href="http://infostart.ru/forum/">Форум</a></dd>
+          <dd><a href="http://infostart.ru/store/">Магазин</a></dd>
+          <dd>
+                     </dd>
+          <dd>
+                     </dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Сервисы</dt>
+          <dd><a href="http://infostart.ru/service/premium/">Премиум-аккаунт</a></dd>
+          <dd><a href="http://infostart.ru/service/developers/">Авторские программы</a></dd>
+          <dd><a href="http://infostart.ru/service/partnership/">Партнерство</a></dd>
+          <dd><a href="http://infostart.ru/service/savedeal/">Безопасная сделка</a></dd>
+          <dd><a href="http://infostart.ru/service/advert/">Реклама на сайте</a></dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Акции</dt>
+          <dd><a href="http://infostart.ru/action/prize/">Розыгрыш призов</a></dd>
+          <dd><a href="http://infostart.ru/action/event/">Мероприятия</a></dd>
+          <dd>
+<!--LiveInternet logo--><a href="http://www.liveinternet.ru/click" target="_blank"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/logo.gif" alt="" title="LiveInternet" border="0" height="31" width="31"></a><!--/LiveInternet-->
+           </dd>
+        </dl>
+      </li>
+
+      <li>
+        <dl>
+          <dt>Сообщество</dt>
+          <dd><a href="http://infostart.ru/community/top100/">ТОП 100</a></dd>
+          <dd><a href="http://infostart.ru/community/groups/">Группы</a></dd>
+          <dd>
+                     </dd>
+          <dd><a href="http://infostart.ru/community/blog/">Личные блоги</a></dd>
+        </dl>
+      </li>
+      <li>
+        <dl>
+          <dt>О сайте</dt>
+          <dd><a href="http://infostart.ru/about/">Описание</a></dd>
+          <dd><a href="http://infostart.ru/about/faq/">Помощь</a></dd>
+          <dd><a href="http://infostart.ru/about/rules/">Пользовательское соглашение</a></dd>
+          <dd>
+                     </dd>
+          <dd><a href="http://infostart.ru/about/blog/">Блог проекта</a></dd>
+          <dd><a href="http://infostart.ru/about/contacts/">Контакты</a></dd>
+        </dl>
+      </li>
+    </ul>
+
+    <div id="footerLogos">
+      <p style="padding-bottom: 20px;"> <a href="http://infostart.ru/" title="" style="float: left; margin-bottom: 20px;"> <img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/footerlogo.jpg" alt="Инфостарт"> </a> </p>
+      <span style="font-size: 200%; margin-left: 30px;"> тел. (812) 309-06-46, ICQ: 744-74-973, Skype:infostart</span>
+      <p style="clear: left;"> © 2006 – 2009 ООО «Инфостарт» - все для 1С. <span><a href="http://infostart.ru/map/">Карта сайта</a></span>
+      <span><a href="http://infostart.ru/about/contacts/">Контакты</a></span> <span>
+	        </span>
+       </p>
+      <p class="clleft">Перепечатка материалов с сайта разрешена только при согласии авторов публикаций. </p>
+    </div>
+  </div>
+</div>
+
+<div style="position: absolute; display: none;" id="cluetip-waitimage"></div><div style="display: none; position: absolute;" id="cluetip"><div style="z-index: 96; opacity: 0.1; top: 6px; left: 6px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 5px; left: 5px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 4px; left: 4px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 3px; left: 3px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 2px; left: 2px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="z-index: 96; opacity: 0.1; top: 1px; left: 1px; position: absolute; background-color: rgb(0, 0, 0);"></div><div style="position: relative; z-index: 97;" id="cluetip-outer"><h3 id="cluetip-title"></h3><div id="cluetip-inner"></div></div><div id="cluetip-extra"></div><div id="cluetip-arrows" class="cluetip-arrows"></div></div><div style="display: none; position: fixed; top: 0px; left: 0px; z-index: 50; width: 100%; height: 100%;" id="overlay"><img style="position: relative; cursor: pointer;" src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/loading.gif" id="loadingImage"></div><div style="display: none; position: absolute; z-index: 60;" id="lightbox"><img style="cursor: pointer;" id="lightboxImage"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/prev.gif" style="display: none; position: absolute; left: 9px; z-index: 70;" id="prevLink"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/next.gif" style="display: none; position: absolute; right: 9px; z-index: 70;" id="nextLink"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/expand.gif" style="display: none; position: absolute; top: 15px; left: 15px; z-index: 70; cursor: pointer;" id="actionImage"><img src="%D0%98%D0%BD%D1%82%D0%B5%D0%B3%D1%80%D0%B0%D1%86%D0%B8%D1%8F%201%D0%A1%20%D1%81%20%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%BD%D0%BE%D0%B9%20%D1%88%D0%B8%D0%BD%D0%BE%D0%B9%20OpenESB_files/close.gif" style="display: inline; position: absolute; right: 9px; top: 10px; z-index: 80; cursor: pointer;" id="closeButton"><span style="display: none; position: absolute; z-index: 80;" id="lightboxCaption"></span></div><div style="display: none; position: absolute; z-index: 70;" id="lightboxOverallView"></div><div style="display: none; position: absolute; z-index: 80;" id="lightboxIndicator"></div></body></html>

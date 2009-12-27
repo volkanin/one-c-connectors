@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://localhost:9000/onecservice?xsd=xsd0" uri="TestBPEL/src/_references/_cache/localhost_9000/onecservice.xsd_xsd0.xsd"/>
+    <system systemId="http://localhost:9000/onecservice?xsd=xsd2" uri="TestBPEL/src/_references/_cache/localhost_9000/onecservice.xsd_xsd2.xsd"/>
+    <system systemId="http://localhost:9000/onecservice?xsd=xsd3" uri="TestBPEL/src/_references/_cache/localhost_9000/onecservice.xsd_xsd3.xsd"/>
+    <system systemId="http://localhost:9000/onecservice?xsd=xsd1" uri="TestBPEL/src/_references/_cache/localhost_9000/onecservice.xsd_xsd1.xsd"/>
+</catalog>

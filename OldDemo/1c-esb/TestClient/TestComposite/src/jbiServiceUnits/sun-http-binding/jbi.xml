@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jbi xmlns="http://java.sun.com/xml/ns/jbi" xmlns:ns1="TestComposite" xmlns:ns10="http://j2ee.netbeans.org/wsdl/TestBPEL/TestMethod" xmlns:ns2="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequest" xmlns:ns3="http://enterprise.netbeans.org/bpel/TestBPEL/TestExchange" xmlns:ns4="http://enterprise.netbeans.org/bpel/TestBPEL/TestScript" xmlns:ns5="http://onecservice" xmlns:ns6="http://enterprise.netbeans.org/bpel/TestBPEL/TestMethod" xmlns:ns7="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteRequest" xmlns:ns8="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExchange" xmlns:ns9="http://j2ee.netbeans.org/wsdl/TestBPEL/TestExecuteScript" version="1.0">
+    <services binding-component="true">
+        <provides endpoint-name="BasicHttpBinding_onecservice" interface-name="ns5:onecservice" service-name="ns5:onecservice"/>
+        <consumes endpoint-name="testRequestPort" interface-name="ns7:TestExecuteRequestPortType" service-name="ns1:casaService1"/>
+        <consumes endpoint-name="testExchangePort" interface-name="ns8:TestExchangePortType" service-name="ns1:casaService4"/>
+        <consumes endpoint-name="testScriptPort" interface-name="ns9:TestExecuteScriptPortType" service-name="ns1:casaService2"/>
+        <consumes endpoint-name="testMethodPort" interface-name="ns10:TestMethodPortType" service-name="ns1:casaService3"/>
+    </services>
+</jbi>
