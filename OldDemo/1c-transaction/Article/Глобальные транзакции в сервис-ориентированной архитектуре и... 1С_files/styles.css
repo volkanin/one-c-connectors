@@ -1,0 +1,140 @@
+HTML,BODY,SPAN,APPLET,OBJECT,IFRAME,
+H1,H2,H3,H4,H5,H6,P,BLOCKQUOTE,PRE,A,ABBR,
+ACRONYM,ADDRESS,BIG,CITE,CODE,DEL,DFN,EM,
+FONT,IMG,INS,KBD,Q,SAMP,SMALL,STRIKE,
+STRONG,SUB,SUP,VAR,FIELDSET,FORM,LABEL,LEGEND
+ {
+	padding:0;
+	margin:0;
+	border:none;
+	outline:none;
+	vertical-align:baseline;
+	font-weight:normal;
+	font-style:normal;
+	font-family:inherit;
+	}
+	
+HTML {
+	font-size:100.01%;
+	}
+BODY {
+	font-family:Verdana, sans-serif;
+	color:#666666;
+	}
+UL {
+	list-style:none;
+	}
+	
+:focus 
+       {
+	outline:none;
+	}
+
+
+h1{
+	padding:0;
+	margin:0;
+	font-weight:normal;
+	color:#999;
+	font-size:1.8em;
+	line-height: 1.0em; 
+	letter-spacing: -1px;
+
+}
+
+h2{
+	font-size: 1.35em;
+    font-weight:normal;
+	padding-top:15px;
+	padding-bottom:5px;
+}
+
+h3{
+	color:#FB723B;
+	font-size: 1.3em;
+	font-weight:normal;
+	padding-top:15px;
+	padding-bottom:10px;
+}
+
+h3 a {
+	color:#FB723B;
+	font-weight:bold;
+}
+
+h4 {
+	font-size: 1em;
+	font-weight:bold;
+	color:#FB723B;	
+}
+
+h5 {
+	font-size: 0.84em;
+}
+
+h6 {
+	font-size: 0.80em;
+}
+
+p {
+	font-size: 1em;
+	padding-top:5px;
+	padding-bottom:5px;
+    
+}
+
+a,
+a:link {
+	color:#3399CC;
+	text-decoration: none; 
+}
+
+a:visited 		
+		{ 
+	text-decoration: none; 
+	color:#3399CC;
+		}
+a:hover 
+		{ 
+	color:#FB723B; 
+	text-decoration: underline;
+		}
+		
+ol 		{
+	padding-left:0;
+	margin-left:23px;
+ 		}
+		
+ul 		{
+	padding: 0;
+	margin: 0 0 0 23px;
+	list-style-type:circle;
+ 		}
+ 
+li  	{
+	padding:0;
+	margin:0;
+	font-weight:normal;
+		}
+
+form {
+	margin:0;	
+}
+
+
+textarea  {
+	background: #FFFFFF;
+	border-style:solid;
+	border-width:1px;
+	border-color:#999999;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size: 1.0em;
+}
+
+strong {
+	font-weight:bold;
+}
+
+img		{ 
+	border: 0;   
+		}
