@@ -24,6 +24,8 @@ namespace MOMAdapters
 	[Guid("0339E962-6744-4844-9408-1A795828CCEE")]	
 	public class JabberAdapter : IAdapter
 	{
+		private static readonly string 					  AdapterType = "Jabber";
+			
 		public static readonly string                  ReceiveAddress = "ReceiveAddress";
 		public static readonly string                     SendAddress = "SendAddress";
 		public static readonly string                          Server = "Server";
@@ -46,6 +48,11 @@ namespace MOMAdapters
 		public Dictionary<string, string> Parameters
 		{
 			get {return parameters;}			
+		}
+		
+		public string GetAdapterType()
+		{
+			return AdapterType;
 		}
 		
 		public void SetParameter(string _name, string _value)

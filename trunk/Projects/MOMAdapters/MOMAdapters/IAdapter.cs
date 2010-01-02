@@ -13,10 +13,14 @@ namespace MOMAdapters
 	[ComVisible(true)]
 	public interface IAdapter : IDisposable
 	{
+		
+		string GetAdapterType();
+		
 		void SetParameter(string _name, string _value);
 		void ClearParameters();
 		
 		void SendFile(string _text);
+
 		void Send(string _text);
 		bool HasMessage();
 		string Receive();

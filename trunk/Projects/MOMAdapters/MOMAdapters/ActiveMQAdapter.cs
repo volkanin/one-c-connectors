@@ -21,6 +21,8 @@ namespace MOMAdapters
 	[Guid("0339E962-6744-4844-9408-1A795828CCB0")]	
 	public class ActiveMQAdapter : IAdapter
 	{
+		private static readonly string 					  AdapterType = "ActiveMQ";
+		
 		public static readonly string         ReceiveDestinationName = "ReceiveDestinationName";
 		public static readonly string            SendDestinationName = "SendDestinationName";
 		public static readonly string       ActiveMQConnectionString = "ActiveMQConnectionString";
@@ -43,6 +45,11 @@ namespace MOMAdapters
 		public Dictionary<string, string> Parameters
 		{
 			get {return parameters;}			
+		}
+		
+		public string GetAdapterType() 
+		{
+			return AdapterType;
 		}
 		
 		public void SetParameter(string _name, string _value)
