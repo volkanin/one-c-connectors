@@ -23,6 +23,8 @@ namespace MOMAdapters
 	[Guid("0339E962-6744-4844-9408-1A795828CCBE")]		
 	public class MSMQAdapter : IAdapter
 	{
+		private static readonly string AdapterType = "MSMQ";
+		
 		public static readonly string ReceiveQueueName = "ReceiveQueueName";
 		public static readonly string    SendQueueName = "SendQueueName";
 		public static readonly string         UserName = "UserName";
@@ -42,6 +44,12 @@ namespace MOMAdapters
 		{
 			get {return parameters;}			
 		}
+		
+		public string GetAdapterType()
+		{
+			return AdapterType;
+		}
+		
 		
 		public void SetParameter(string _name, string _value)
 		{
