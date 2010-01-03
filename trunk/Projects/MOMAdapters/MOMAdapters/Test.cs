@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Threading;
 using NUnit.Framework;
 
 namespace MOMAdapters
@@ -26,5 +27,52 @@ namespace MOMAdapters
 			locator.GetComponent("JabberAdapter");
 			locator.GetComponent("ActiveMQAdapter");
 		}
+		
+		[Test]
+		//[Ignore]
+		public void TestAcitveMQ()
+		{
+			Locator locator = new Locator();
+			IAdapter sender = (IAdapter)locator.GetComponent("ActiveMQAdapter");
+			sender.SetParameter("ActiveMQConnectionString", "tcp://localhost:61616");
+			sender.SetParameter("ReceiveDestinationName", "queue/first");
+			sender.SetParameter("SendDestinationName", "queue/second");			
+			
+			IAdapter receiver = (IAdapter)locator.GetComponent("ActiveMQAdapter");
+			receiver.SetParameter("ActiveMQConnectionString", "tcp://localhost:61616");
+			receiver.SetParameter("ReceiveDestinationName", "queue/second");
+			receiver.SetParameter("SendDestinationName", "queue/first");	
+			
+			sender.Start();
+			receiver.Start();
+			try
+			{
+				sender.Begin();
+				sender.Send("ЙЦУКЕН");
+				sender.Commit();
+				
+				Thread.Sleep(3000);
+				
+				receiver.Begin();
+				Assert.IsTrue(receiver.HasMessage());
+				Assert.AreEqual(receiver.Receive(), "ЙЦУКЕН");
+				receiver.Commit();
+			}
+			finally
+			{
+				sender.Stop();
+				receiver.Stop();
+			}
+		}
+		
+		[Test]
+		[Ignore]
+		public void TestHighLoadActiveMQ()
+		{
+			
+		}
+				
+		
+		
 	}
 }
