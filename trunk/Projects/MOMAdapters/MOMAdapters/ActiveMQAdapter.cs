@@ -14,11 +14,12 @@ using Apache.NMS.ActiveMQ;
 
 namespace MOMAdapters
 {
+	[AutoLocate("ActiveMQAdapter")]
 	[ComVisible(true)]	
 	[ComSourceInterfacesAttribute(typeof(IAdapter))]	
 	[ClassInterface(ClassInterfaceType.AutoDual)]	
-	[ProgId("ActiveMQAdapter")]	
-	[Guid("0339E962-6744-4844-9408-1A795828CCB0")]	
+	[ProgId("MOMAdapters.ActiveMQAdapter")]
+	[Guid("4B8D93BC-304F-4A5D-AC5E-9D91F3240A78")]	
 	public class ActiveMQAdapter : IAdapter
 	{
 		private static readonly string 					  AdapterType = "ActiveMQ";
@@ -39,7 +40,7 @@ namespace MOMAdapters
 		private Queue<string>     messageBuffer = null;
 		private bool                 useZipFlag = false;
 		
-		private Dictionary<string, string>      parameters = new Dictionary<string, string>();
+		private Dictionary<string, string>      parameters = new Dictionary<string, string>();				
 	
 		[ComVisible(false)]
 		public Dictionary<string, string> Parameters

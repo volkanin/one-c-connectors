@@ -40,6 +40,9 @@
     <Reference Include="Apache.NMS.ActiveMQ">
       <HintPath>..\..\..\Lib\Apache.NMS.ActiveMQ.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\Lib\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -51,11 +54,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoLocate.cs" />
     <Compile Include="IAdapter.cs" />
+    <Compile Include="ILocator.cs" />
     <Compile Include="MSMQAdapter.cs" />
     <Compile Include="ActiveMQAdapter.cs" />
     <Compile Include="JabberAdapter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Locator.cs" />
+    <Compile Include="Test.cs" />
   </ItemGroup>
 </Project>
