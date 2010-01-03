@@ -29,7 +29,7 @@ namespace MOMAdapters
 		}
 		
 		[Test]
-		//[Ignore]
+		[Ignore]
 		public void TestAcitveMQ()
 		{
 			Locator locator = new Locator();
@@ -66,10 +66,62 @@ namespace MOMAdapters
 		}
 		
 		[Test]
-		[Ignore]
+		//[Ignore]
 		public void TestHighLoadActiveMQ()
 		{
+			Locator locator = new Locator();
+			IAdapter sender = (IAdapter)locator.GetComponent("ActiveMQAdapter");
+			sender.SetParameter("ActiveMQConnectionString", "tcp://localhost:61616");
+			sender.SetParameter("ReceiveDestinationName", "queue/first");
+			sender.SetParameter("SendDestinationName", "queue/second");			
 			
+			IAdapter receiver = (IAdapter)locator.GetComponent("ActiveMQAdapter");
+			receiver.SetParameter("ActiveMQConnectionString", "tcp://localhost:61616");
+			receiver.SetParameter("ReceiveDestinationName", "queue/second");
+			receiver.SetParameter("SendDestinationName", "queue/first");	
+			
+			sender.Start();
+			receiver.Start();
+			try
+			{				
+				
+				Thread senderThread = new Thread(
+								delegate () 
+								{
+									long counter = 0;
+									while (true)
+									{
+										sender.Begin();
+										sender.Send("ЙЦУКЕН " + counter);
+										sender.Commit();	
+										counter++;
+										Thread.Sleep(10);
+									}
+								}
+												);				
+				
+				Thread receiverThread = new Thread(
+								delegate () 
+								{									
+									while (true)
+									{
+										receiver.Begin();										
+										Console.WriteLine(receiver.Receive());
+										receiver.Commit();
+									}
+								}
+												);				
+				
+				senderThread.Start();
+				Thread.Sleep(3000);												
+				receiverThread.Start();
+				receiverThread.Join();
+			}
+			finally
+			{
+				sender.Stop();
+				receiver.Stop();
+			}
 		}
 				
 		
