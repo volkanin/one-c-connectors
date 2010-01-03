@@ -102,12 +102,26 @@ namespace MOMAdapters
 				
 				Thread receiverThread = new Thread(
 								delegate () 
-								{									
+								{					
+									long counter = 0;
 									while (true)
 									{
-										receiver.Begin();										
-										Console.WriteLine(receiver.Receive());
-										receiver.Commit();
+										receiver.Begin();						
+										if (counter < 100)
+										{
+											counter++;
+											receiver.Receive();
+											receiver.Rollback();											
+										}	
+										else
+										{
+											counter = 0;
+											while (receiver.HasMessage())
+											{
+												Console.WriteLine(receiver.Receive());
+											}
+											receiver.Commit();											
+										}
 									}
 								}
 												);				
