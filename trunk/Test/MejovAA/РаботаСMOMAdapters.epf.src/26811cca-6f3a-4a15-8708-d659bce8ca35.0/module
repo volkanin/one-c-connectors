@@ -1,0 +1,8 @@
+﻿Процедура КнопкаПровекраЛокатораНажатие(Элемент)	
+	locator = GetCOMObject("", "MOMAdapters.Locator");
+	componentsList = locator.GetComponentsList();
+	
+	Для Каждого э Из componentsList Цикл
+		Сообщить(э);
+	КонецЦикла;
+КонецПроцедуры
