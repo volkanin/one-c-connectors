@@ -30,7 +30,7 @@ Function runSrcMake(filePath, curPath)
 	'V8Unpack.exe -unpack      %2                              %2.unp
 	'V8Unpack.exe -undeflate   %2.unp\metadata.data            %2.unp\metadata.data.und
 	'V8Unpack.exe -unpack      %2.unp\metadata.data.und        %2.unp\smetadata.unp
-	commandLineUnpack = "..\Lib\v8unpack\v8Unpack.exe -parse "&curPath&"\"&filePath&" "&curPath&"\"&filePath&".src --PARSELEVEL=2"
+	commandLineUnpack = "..\Util\v8unpack\v8Unpack.exe -parse "&curPath&"\"&filePath&" "&curPath&"\"&filePath&".src --PARSELEVEL=2"
 	
 	Dim oShells
 	Set oShell = WScript.CreateObject ("WScript.Shell")
