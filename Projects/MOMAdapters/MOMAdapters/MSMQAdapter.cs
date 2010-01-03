@@ -15,12 +15,13 @@ using System.Threading;
 using System.Runtime.InteropServices;
 
 namespace MOMAdapters
-{		
+{			
+	[AutoLocate("MSMQAdapter")]
 	[ComVisible(true)]	
 	[ComSourceInterfacesAttribute(typeof(IAdapter))]	
 	[ClassInterface(ClassInterfaceType.AutoDual)]	
-	[ProgId("MSMQAdapter")]	
-	[Guid("0339E962-6744-4844-9408-1A795828CCBE")]		
+	[ProgId("MOMAdapters.MSMQAdapter")]
+	[Guid("F89F8898-CE26-4A69-833F-D7F11F81B894")]
 	public class MSMQAdapter : IAdapter
 	{
 		private static readonly string AdapterType = "MSMQ";
@@ -37,7 +38,7 @@ namespace MOMAdapters
 		private bool                    transactionStarted = false;
 		private bool                            useZipFlag = false;	
 		
-		private Dictionary<string, string>      parameters = new Dictionary<string, string>();
+		private Dictionary<string, string>      parameters = new Dictionary<string, string>();				
 	
 		[ComVisible(false)]
 		public Dictionary<string, string> Parameters

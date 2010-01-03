@@ -17,11 +17,12 @@ using agsXMPP.Xml.Dom;
 
 namespace MOMAdapters
 {
+	[AutoLocate("JabberAdapter")]
 	[ComVisible(true)]	
 	[ComSourceInterfacesAttribute(typeof(IAdapter))]	
 	[ClassInterface(ClassInterfaceType.AutoDual)]	
-	[ProgId("JabberAdapter")]	
-	[Guid("0339E962-6744-4844-9408-1A795828CCEE")]	
+	[ProgId("MOMAdapters.JabberAdapter")]
+	[Guid("540A84D9-1002-42CB-9111-4ECF8A858D97")]	
 	public class JabberAdapter : IAdapter
 	{
 		private static readonly string 					  AdapterType = "Jabber";
@@ -42,7 +43,7 @@ namespace MOMAdapters
 		
 		private Queue<Message> messageBuffer = new Queue<Message>();
 		
-		private Dictionary<string, string>      parameters = new Dictionary<string, string>();
+		private Dictionary<string, string>      parameters = new Dictionary<string, string>();				
 				
 		[ComVisible(false)]
 		public Dictionary<string, string> Parameters
