@@ -73,7 +73,7 @@ namespace MOMAdapters
 			else
 			{
 				if (sa[0].Equals("queue"))
-				{
+				{					
 					return session.GetQueue(sa[1]);
 				}
 				else
@@ -94,20 +94,22 @@ namespace MOMAdapters
 			else
 			{
 				connection = factory.CreateConnection();
-			}
+			}						
 			connection.Start();
-			session = connection.CreateSession(AcknowledgementMode.Transactional);
+			
+			session = connection.CreateSession(AcknowledgementMode.Transactional);					
 						
 			if (Parameters.ContainsKey(SendDestinationName))
 			{
-				sendDestination = CreateDestination(Parameters[SendDestinationName]);
+				sendDestination = CreateDestination(Parameters[SendDestinationName]);				
 				producer = session.CreateProducer(sendDestination);
 			}
 			
 			if (Parameters.ContainsKey(ReceiveDestinationName))
 			{
 				receiveDestination = CreateDestination(Parameters[ReceiveDestinationName]);
-				consumer = session.CreateConsumer(receiveDestination);						
+				consumer = session.CreateConsumer(receiveDestination);	
+				((Apache.NMS.ActiveMQ.MessageConsumer)consumer).RedeliveryTimeout = 500;
 			}
 		
 			if (Parameters.ContainsKey(UseZip))
@@ -192,13 +194,15 @@ namespace MOMAdapters
 			}
 			IMessage message = null;
 			if (useZipFlag)
-			{
+			{				
 				message = session.CreateBytesMessage(MSMQAdapter.CompressString(_text));
 			}
 			else
 			{
 				message = session.CreateTextMessage(_text);
 			}			
+			message.NMSPersistent = true;
+			message.NMSTimeToLive = TimeSpan.MaxValue;			
 			producer.Send(message);			
 		}
 		
@@ -305,6 +309,7 @@ namespace MOMAdapters
 			{
 				messageBuffer.Clear();
 				session.Rollback();
+				((Apache.NMS.ActiveMQ.MessageConsumer)consumer).RedeliverRolledBackMessages();
 			}
 		}
 		
