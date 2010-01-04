@@ -72,8 +72,11 @@
               <policyEntries>
                 <policyEntry topic=">" producerFlowControl="true" memoryLimit="20mb">
                   <pendingSubscriberPolicy>
-                    <vmCursor />
+                    <fileCursor />
                   </pendingSubscriberPolicy>
+		  <pendingMessageLimitStrategy>
+              		<constantPendingMessageLimitStrategy limit="-1"/>
+            	  </pendingMessageLimitStrategy>
                 </policyEntry>
                 <policyEntry queue=">" producerFlowControl="true" memoryLimit="20mb">
                   <!-- Use VM cursor for better latency
@@ -85,6 +88,12 @@
                     <vmQueueCursor/>
                   </pendingQueuePolicy>
                   -->
+                  <pendingSubscriberPolicy>
+                    <fileCursor />
+                  </pendingSubscriberPolicy>
+   		  <pendingMessageLimitStrategy>
+              		<constantPendingMessageLimitStrategy limit="-1"/>
+            	  </pendingMessageLimitStrategy>
                 </policyEntry>
               </policyEntries>
             </policyMap>
