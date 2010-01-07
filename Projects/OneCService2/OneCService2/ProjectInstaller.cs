@@ -1,10 +1,9 @@
 ﻿/*
  * Created by SharpDevelop.
- * User: Андрей
+ * User: Andrei Mejov <andrei.mejov@gmail.com>
  * Date: 03.01.2010
  * Time: 19:58
  * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
 using System.Collections.Generic;
