@@ -16,12 +16,11 @@ namespace OneCService2
 	{
 		[Test]
 		public void TestAdapterLifeCycle()
-		{				
-			
+		{			
 			V81Adapter adapter = new V81Adapter();
 			adapter.Logger = new ConsoleLogger();
 			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
-			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test2");
 			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
 			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
 			
