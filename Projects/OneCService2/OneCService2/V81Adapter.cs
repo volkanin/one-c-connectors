@@ -35,7 +35,7 @@ namespace OneCService2
 						
 		public override void Init()
 		{
-			Connection = CreateInstanceByProgId("V81.Application");
+			Connection = CreateInstanceByProgId("V81.ComConnector");
 			string connectionString = null;
 			if (Parameters[ModeParam].Equals("Server"))
 			{
@@ -55,14 +55,14 @@ namespace OneCService2
 		public override void Done()
 		{
 			RestoreConnectionRCW();			
-			try
-			{
-				Invoke(Connection, "Exit", new object[] {});
-			}
-			catch (Exception _e)
-			{		
-				Logger.Severe("Exception in adapter Done: " + _e.ToString());
-			}
+			//try
+			//{
+			//	Invoke(Connection, "Exit", new object[] {});
+			//}
+			//catch (Exception _e)
+			//{		
+			//	Logger.Severe("Exception in adapter Done: " + _e.ToString());
+			//}
 			try
 			{
 				ReleaseRCW(Connection);
