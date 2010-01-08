@@ -9,11 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Xml;
 
 namespace OneCService2
 {
 	public abstract class AbstractAdapter : IDisposable
 	{	
+		public enum SupportedType {STRING, INTEGER, DOUBLE, BOOLEAN, DATE, OBJECT, ARRAY};
+		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
 		private IntPtr                  connectionPtr = IntPtr.Zero;
@@ -137,10 +140,35 @@ namespace OneCService2
 		public abstract void Init();		
 		public abstract void Done();
 		
-		/*Работа с типами*/
-		protected abstract void PrepareSupportedType();		
-		/*Полезные методы*/		
+		/*Работа с типами*/				
+		protected abstract XmlNode Serialize(object _o);
+		protected abstract object DeSerialize(XmlNode _node);	
+		protected abstract SupportedType GetTypeForValue(object _o);
 		
+		/*Полезные методы*/		
+		public abstract ResultSet ExecuteRequest(string _request);
+		
+		public abstract object ExecuteScript(string _script);						
+		public ResultSet ExecuteScriptForResultSet(string _script)
+		{
+			object o = ExecuteScript(_script);
+			ResultSet resultSet = new ResultSet();
+			resultSet.ColumnNames.Add("value");
+			resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
+			
+			Row row = new Row();
+			row.ValuesList.Add(Serialize(o));
+			
+			resultSet.Rows.Add(row);
+				
+			return resultSet;
+		}
+		
+		public abstract object ExecuteMethod(string _methodName, object[] _parameters);		
+		public ResultSet ExecuteMethodForResultSet(string _methodName, object[] _parameters)
+		{
+			return null;
+		}
 		
 		public void Dispose()
 		{

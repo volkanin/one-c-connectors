@@ -6,6 +6,7 @@
  *  
  */
 using System;
+using System.Xml;
 
 namespace OneCService2
 {
@@ -18,8 +19,10 @@ namespace OneCService2
 		public static readonly string   ServerParam = "Server";
 		public static readonly string     BaseParam = "Base";
 		
-		private string fileConnectionStringTemplate = "File=${File}; Usr=${UserName}; Pwd=${Password}";		
+		private string   fileConnectionStringTemplate = "File=${File}; Usr=${UserName}; Pwd=${Password}";		
 		private string serverConnectionStringTemplate = "Srvr=${Server}; Ref=${Base}; Usr=${UserName}; Pwd=${Password}";
+		
+		private object comConnector = null;
 		
 		public string FileConnectionStringTemplate
 		{
@@ -35,7 +38,7 @@ namespace OneCService2
 						
 		public override void Init()
 		{
-			Connection = CreateInstanceByProgId("V81.ComConnector");
+			comConnector = CreateInstanceByProgId("V81.ComConnector");
 			string connectionString = null;
 			if (Parameters[ModeParam].Equals("Server"))
 			{
@@ -48,21 +51,22 @@ namespace OneCService2
 				connectionString = PrepareConnectionString(fileConnectionStringTemplate);
 			}
 			
-			Invoke(Connection, "Connect", new object[] {connectionString});
-			PrepareSupportedType();
+			Connection = Invoke(comConnector, "Connect", new object[] {connectionString});			
 		}
 		
 		public override void Done()
 		{
 			RestoreConnectionRCW();			
-			//try
-			//{
-			//	Invoke(Connection, "Exit", new object[] {});
-			//}
-			//catch (Exception _e)
-			//{		
-			//	Logger.Severe("Exception in adapter Done: " + _e.ToString());
-			//}
+			try
+			{
+				ReleaseRCW(comConnector);
+			}
+			catch (Exception _e)
+			{	
+				Logger.Severe("Exception in adapter Done: " + _e.ToString());
+			}
+			
+			RestoreConnectionRCW();			
 			try
 			{
 				ReleaseRCW(Connection);
@@ -71,10 +75,36 @@ namespace OneCService2
 			{	
 				Logger.Severe("Exception in adapter Done: " + _e.ToString());
 			}
+		}				
+		
+		protected override XmlNode Serialize(object _o)
+		{
+			throw new NotImplementedException();
 		}
 		
-		protected override void PrepareSupportedType()
-		{		
+		protected override object DeSerialize(XmlNode _node)
+		{
+			throw new NotImplementedException();
+		}
+		
+		protected override SupportedType GetTypeForValue(object _o)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public override object ExecuteScript(string _script)
+		{			
+			return Invoke(Connection, "OneCService_ВыполнитьСтроку", new object[] {_script});						    
 		}		
+		
+		public override ResultSet ExecuteRequest(string _request)
+		{
+			throw new NotImplementedException();
+		}
+		
+		public override object ExecuteMethod(string _methodName, object[] _parameters)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }
