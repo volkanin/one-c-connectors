@@ -104,7 +104,7 @@ namespace OneCService
 			result = Invoke(request, "Выполнить", new object[] {});	
 			resultSet = Invoke(result, "Выбрать", new object[] {});	
 			
-			doubleType = Invoke(
+			stringType = Invoke(
 							Invoke(
 									GetProperty(
 											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {0}),
@@ -112,10 +112,10 @@ namespace OneCService
 												), 
 									"Типы", new object[] {}
 								 ),
-							"Получить", new object[] {1}
+							"Получить", new object[] {0}
 							   );
 		
-			stringType = Invoke(
+			doubleType = Invoke(
 							Invoke(
 									GetProperty(
 											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {1}),
