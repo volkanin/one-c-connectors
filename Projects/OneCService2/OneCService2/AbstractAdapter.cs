@@ -13,9 +13,11 @@ using System.Xml;
 
 namespace OneCService2
 {
+	public enum SupportedType {STRING, INTEGER, DOUBLE, BOOLEAN, DATE, OBJECT, ARRAY};
+	
 	public abstract class AbstractAdapter : IDisposable
 	{	
-		public enum SupportedType {STRING, INTEGER, DOUBLE, BOOLEAN, DATE, OBJECT, ARRAY};
+		public static readonly string OneCServiceArrayElement = "onecservice-array";
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
@@ -141,9 +143,9 @@ namespace OneCService2
 		public abstract void Done();
 		
 		/*Работа с типами*/				
-		protected abstract XmlNode Serialize(object _o);
-		protected abstract object DeSerialize(XmlNode _node);	
-		protected abstract SupportedType GetTypeForValue(object _o);
+		public abstract XmlNode Serialize(object _o);
+		public abstract object DeSerialize(XmlNode _node);	
+		public abstract SupportedType GetTypeForValue(object _o);
 		
 		/*Полезные методы*/		
 		public abstract ResultSet ExecuteRequest(string _request);
