@@ -13,8 +13,9 @@ namespace OneCService2
 {
 	public class V81Adapter : AbstractAdapter
 	{
-		public static readonly string    RequestForGetTypes = "ВЫБРАТЬ \"А\", 1, Истина, ДатаВремя(1,1,1)";
-		public static readonly string ScriptForGetArrayType = "результат=Тип(\"Массив\");";
+		public static readonly string     RequestForGetTypes = "ВЫБРАТЬ \"А\", 1, Истина, ДатаВремя(1,1,1)";
+		public static readonly string  ScriptForGetArrayType = "результат=Тип(\"Массив\");";
+		public static readonly string ScriptForGetStructType = "результат=Тип(\"Структура\")";		
 		
 		public static readonly string     ModeParam = "Mode";
 		public static readonly string UserNameParam = "UserName";
@@ -34,6 +35,7 @@ namespace OneCService2
 		private object    boolType = null;
 		private object    dateType = null;
 		private object   arrayType = null;
+		private object  structType = null;
 		
 		//Сериализтор
 		private object     xdtoSer = null;
@@ -140,13 +142,16 @@ namespace OneCService2
 									"Типы", new object[] {}
 								 ),
 							"Получить", new object[] {0}
-							   );
-			arrayType = ExecuteScript(ScriptForGetArrayType);
-			
+							   );			
+		
 			Invoke(row, "Следующий", new object[] {});
 			ReleaseRCW(row);
 			ReleaseRCW(result);
 			ReleaseRCW(request);
+			
+			arrayType = ExecuteScript(ScriptForGetArrayType);
+			
+			structType = ExecuteScript(ScriptForGetStructType);
 			
 			xdtoSer = Invoke(
 							Connection, 
@@ -181,6 +186,10 @@ namespace OneCService2
 			else if ((bool)(Invoke(Connection, "OneCService_ПринадлежитТипу", new object[] {_o, arrayType})))
 			{
 				return SupportedType.ARRAY;	
+			}
+			else if ((bool)(Invoke(Connection, "OneCService_ПринадлежитТипу", new object[] {_o, structType})))
+			{
+				return SupportedType.STRUCT;
 			}
 			else
 			{
@@ -227,8 +236,47 @@ namespace OneCService2
 					{
 						XmlElement itemElement = doc.CreateElement(OneCServiceArrayElement+"-item");
 						arrayElement.AppendChild(itemElement);
-						XmlElement itemValueElement = (XmlElement)Serialize(item);
+						XmlNode itemValueElement = (XmlNode)Serialize(item);
 						itemElement.AppendChild(doc.ImportNode(itemValueElement, true));
+					}
+				}
+				resultNode = doc.DocumentElement;
+			}
+			else if (type.Equals(SupportedType.STRUCT))
+			{
+				XmlDocument doc = new XmlDocument();
+				XmlElement structElement = doc.CreateElement(OneCServiceStructElement);
+				doc.AppendChild(structElement);
+				object arrayOfStructElements = Invoke(Connection, "OneCService_ЭлементыСтруктурыВМассив", new object[] {o});
+				int count = (int)Invoke(arrayOfStructElements, "Количество", new object[] {});
+				for (int i=0; i<count; i++)
+				{
+					object keyAndValue = Invoke(arrayOfStructElements, "Получить", new object[] {i});
+					if (keyAndValue != null)
+					{
+						//Поле структры
+						XmlElement itemElement = doc.CreateElement(OneCServiceStructElement+"-item");
+						structElement.AppendChild(itemElement);
+						
+						//Название (ключ)
+						XmlElement keyElement = doc.CreateElement("struct-item-key");
+						keyElement.AppendChild(
+										doc.CreateTextNode(
+												GetProperty(keyAndValue, "Ключ").ToString()
+														  )
+											  );
+						
+						itemElement.AppendChild(keyElement);												
+						
+						//Значение
+						XmlNode valueContent = (XmlNode)Serialize(
+												 			GetProperty(keyAndValue, "Значение")
+									  		 		             );
+						
+						XmlElement valueElement = doc.CreateElement("struct-item-value");
+						valueElement.AppendChild(doc.ImportNode(valueContent, true));
+						
+						itemElement.AppendChild(valueElement);												
 					}
 				}
 				resultNode = doc.DocumentElement;

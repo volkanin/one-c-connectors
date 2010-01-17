@@ -119,11 +119,22 @@ namespace OneCService2
 				node = adapter.Serialize(o);
 				
 				WriteXml(node);
+				
+				o = adapter.ExecuteScript("с = Новый Структура(); с.Вставить(\"ЭтоКлюч\", \"ЭтоЗначение\"); с.Вставить(\"ЭтоКлюч1\", \"ЭтоЗначение1\"); результат=с;");
+				node = adapter.Serialize(o);
+				
+				WriteXml(node);
 			}
 			finally
 			{
 				adapter.Done();
 			}
+		}
+		
+		[Test]
+		public void TestDeSerialize()
+		{
+			Assert.IsTrue(true);
 		}
 		
 		[Test]

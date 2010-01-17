@@ -13,11 +13,12 @@ using System.Xml;
 
 namespace OneCService2
 {
-	public enum SupportedType {STRING, INTEGER, DOUBLE, BOOLEAN, DATE, OBJECT, ARRAY};
+	public enum SupportedType {STRING, INTEGER, DOUBLE, BOOLEAN, DATE, OBJECT, ARRAY, STRUCT};
 	
 	public abstract class AbstractAdapter : IDisposable
 	{	
 		public static readonly string OneCServiceArrayElement = "onecservice-array";
+		public static readonly string OneCServiceStructElement = "onecservice-struct";
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
