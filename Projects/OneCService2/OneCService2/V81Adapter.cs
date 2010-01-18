@@ -6,7 +6,9 @@
  *  
  */
 using System;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace OneCService2
@@ -302,10 +304,16 @@ namespace OneCService2
 					ReleaseRCW(writeXml);
 				}
 			}
+			else if (type.Equals(SupportedType.DATE))
+			{
+				XmlDocument doc = new XmlDocument();	
+				resultNode = doc.CreateNode(XmlNodeType.Text, null, null);				
+				resultNode.Value = ((DateTime)o).ToString("yyyy-MM-dd'T'HH:mm:ss.fffffffZ");
+			}
 			else
 			{
 				XmlDocument doc = new XmlDocument();	
-				resultNode = doc.CreateNode(XmlNodeType.Text, null, null);
+				resultNode = doc.CreateNode(XmlNodeType.Text, null, null);				
 				resultNode.Value = o.ToString();
 			}
 			
@@ -314,7 +322,75 @@ namespace OneCService2
 		
 		public override object DeSerialize(XmlNode _node)
 		{
-			throw new NotImplementedException();
+			//Десериализация простых типов
+			if (_node.NodeType.Equals(XmlNodeType.Text))
+			{
+				string s = _node.Value;		
+				if (isBool(s))
+				{
+					return bool.Parse(s);					
+				}
+				else if (isDouble(s))
+				{
+					return double.Parse(s);
+				}
+				else if (isInt(s))
+				{
+					return int.Parse(s);
+				}
+				else if (isDate(s))
+				{
+					return DateTime.ParseExact(
+											s, 
+											"yyyy-MM-dd'T'HH:mm:ss.fffffffZ", 
+											new CultureInfo("en-US", true)
+											  );
+				}
+				else
+				{
+					return s;
+				}
+			}
+			//Десереализация сложных типов
+			else if (_node.NodeType.Equals(XmlNodeType.Element))
+			{
+				//Массив
+				if (_node.LocalName.Equals(OneCServiceArrayElement))
+				{
+					object array = Invoke(Connection, "NewObject", new object[] {"Массив"});
+					foreach (XmlNode n in _node.ChildNodes)
+					{
+						if (n.NodeType.Equals(XmlNodeType.Element))
+						{
+							if (n.LocalName.Equals(OneCServiceArrayElement+"-item"))
+							{
+								if (n.ChildNodes.Count > 0)
+								{
+									XmlNode itemNode = n.ChildNodes.Item(0);
+									object item = DeSerialize(itemNode);
+									Invoke(array, "Добавить", new object[] {item});
+								}
+							}//if item
+						}//if element
+					}//foreach
+					return array;
+				}
+				//Структура
+				else if (_node.LocalName.Equals(OneCServiceStructElement))
+				{
+					
+				}
+				//Объект
+				else
+				{
+					
+				}
+				return null;
+			}
+			else
+			{
+				throw new Exception("Unsupported node type: " + _node.NodeType.ToString());
+			}			
 		}
 		
 		public override object ExecuteScript(string _script)
