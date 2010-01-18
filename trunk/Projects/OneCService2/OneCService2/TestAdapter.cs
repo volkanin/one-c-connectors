@@ -132,15 +132,60 @@ namespace OneCService2
 		}
 		
 		[Test]
-		public void TestDeSerialize()
+		public void TestTypeCheck()
 		{
-			Assert.IsTrue(true);
+			Assert.IsTrue(V81Adapter.isDouble("0.1"));
+			Assert.IsTrue(V81Adapter.isInt("12"));						
+			Assert.IsTrue(V81Adapter.isBool("True"));
+			Assert.IsTrue(V81Adapter.isBool("False"));
+			
+			V81Adapter adapter = new V81Adapter();
+			XmlNode node = adapter.Serialize(DateTime.Now);
+			Assert.IsTrue(V81Adapter.isDate(node.Value));
+			Console.WriteLine(node.Value);
 		}
 		
 		[Test]
-		public void TestAdaptersWork()
-		{
+		public void TestSimpleDeSerialize()
+		{			
+			V81Adapter adapter = new V81Adapter();
+			XmlNode dateString = adapter.Serialize(DateTime.Now);
+			XmlNode intString = adapter.Serialize(12);
+			XmlNode doubleString = adapter.Serialize(0.1);
+			XmlNode boolString = adapter.Serialize(false);
 			
+			Assert.IsTrue(adapter.DeSerialize(dateString) is DateTime);
+			Assert.IsTrue(adapter.DeSerialize(intString) is int);
+			Console.WriteLine("QQQ: "+doubleString.Value);
+			Assert.IsTrue(adapter.DeSerialize(doubleString) is double);
+			Assert.IsTrue(adapter.DeSerialize(boolString) is bool);
+		}
+		
+		[Test]
+		public void TestComplexDeSerialize()
+		{
+			V81Adapter adapter = new V81Adapter();
+			adapter.Logger = new ConsoleLogger();
+			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test");
+			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
+			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
+			
+			adapter.Init();
+			try
+			{
+				object o = adapter.ExecuteScript(
+								"м = Новый Массив(); м.Добавить(\"ЙЦУКЕН\"); результат=м;"
+												);
+				XmlNode node = adapter.Serialize(o);
+				
+				o = adapter.DeSerialize(node);
+				Assert.NotNull(o);
+			}
+			finally
+			{
+				adapter.Done();
+			}
 		}
 	}
 }

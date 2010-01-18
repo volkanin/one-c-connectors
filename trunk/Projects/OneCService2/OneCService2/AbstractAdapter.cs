@@ -7,8 +7,10 @@
  */
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace OneCService2
@@ -19,6 +21,9 @@ namespace OneCService2
 	{	
 		public static readonly string OneCServiceArrayElement = "onecservice-array";
 		public static readonly string OneCServiceStructElement = "onecservice-struct";
+		
+		private static Regex isDoubleRegex = new Regex("^\\d+\\.?\\d+$");		
+		private static Regex   isBoolRegex = new Regex("^(true)|(false)$");
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
@@ -146,7 +151,39 @@ namespace OneCService2
 		/*Работа с типами*/				
 		public abstract XmlNode Serialize(object _o);
 		public abstract object DeSerialize(XmlNode _node);	
-		public abstract SupportedType GetTypeForValue(object _o);
+		public abstract SupportedType GetTypeForValue(object _o);				
+		
+		public static bool isDouble(string _s)
+		{
+			return (isDoubleRegex.IsMatch(_s.Trim().Replace(',','.'))) && (_s.Replace(',','.').Contains("."));
+		}
+		
+		public static bool isInt(string _s)
+		{
+			return (isDoubleRegex.IsMatch(_s.Trim())) && (!_s.Contains("."));
+		}
+		
+		public static bool isBool(string _s)
+		{
+			return isBoolRegex.IsMatch(_s.Trim().ToLower());
+		}
+		
+		public static bool isDate(string _s)
+		{
+			try
+			{
+				DateTime.ParseExact(
+								_s, 
+								"yyyy-MM-dd'T'HH:mm:ss.fffffffZ", 
+								new CultureInfo("en-US", true)
+								  );
+				return true;
+			}
+			catch (Exception _e)
+			{
+				return false;
+			}
+		}
 		
 		/*Полезные методы*/		
 		public abstract ResultSet ExecuteRequest(string _request);
