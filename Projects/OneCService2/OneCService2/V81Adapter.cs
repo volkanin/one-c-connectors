@@ -325,7 +325,7 @@ namespace OneCService2
 			//Десериализация простых типов
 			if (_node.NodeType.Equals(XmlNodeType.Text))
 			{
-				string s = _node.Value;		
+				string s = _node.Value.Trim();
 				if (isBool(s))
 				{
 					return bool.Parse(s);					
@@ -378,12 +378,65 @@ namespace OneCService2
 				//Структура
 				else if (_node.LocalName.Equals(OneCServiceStructElement))
 				{
+					object strct = Invoke(Connection, "NewObject", new object[] {"Структура"});
 					
+					foreach (XmlNode n in _node.ChildNodes)
+					{
+						if (n.NodeType.Equals(XmlNodeType.Element))
+						{
+							if (n.LocalName.Equals(OneCServiceStructElement+"-item"))
+							{
+								string key = null;
+								object val = null;
+								foreach (XmlNode i in n.ChildNodes)
+								{
+									if (i.NodeType.Equals(XmlNodeType.Element))
+									{
+										if (i.LocalName.Equals("struct-item-key") && (i.ChildNodes.Count>0))
+										{
+											key = i.ChildNodes.Item(0).Value;											
+										}
+										else if (i.LocalName.Equals("struct-item-value") && (i.ChildNodes.Count>0))
+										{
+											val = DeSerialize(i.ChildNodes.Item(0));
+										}
+									}
+								}//foreach key and value
+								if (key == null)
+								{
+									throw new Exception("Exception in DeSerialize: key not found in structure");
+								}
+								
+								Invoke(strct, "Вставить", new object[] {key, val});
+							}
+						}//if element
+					}//foreach
+					
+					return strct;
 				}
 				//Объект
 				else
 				{
-					
+					using (StringWriter sw = new StringWriter())
+					{
+						using (XmlWriter xw = XmlTextWriter.Create(sw, new XmlWriterSettings()))
+						{
+							_node.WriteTo(xw);
+						}
+						
+						object readXml = Invoke(Connection, "NewObject", new object[] {"ЧтениеXML"});
+						try
+						{
+							Invoke(readXml, "УстановитьСтроку", new object[] {sw.ToString()});			
+							object o = Invoke(xdtoSer, "ПрочитатьXML", new object[] {readXml});
+							Invoke(readXml, "Закрыть", new object[] {});					
+							return o;
+						}
+						finally
+						{
+							ReleaseRCW(readXml);
+						}						
+					}//using sw
 				}
 				return null;
 			}

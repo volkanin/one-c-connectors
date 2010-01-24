@@ -7,7 +7,9 @@
  */
 
 using System;
+using System.Reflection;
 using System.Xml;
+
 using NUnit.Framework;
 
 namespace OneCService2
@@ -25,6 +27,28 @@ namespace OneCService2
 			doc.WriteContentTo(writer);
 			writer.Flush();
 			writer.Close();		
+		}
+		
+		private object GetProperty(object _o, string _name)
+		{
+			return _o.GetType().InvokeMember(
+									_name, 
+									BindingFlags.Public | BindingFlags.Static | BindingFlags.GetProperty, 
+									null, 
+									_o, 
+									null
+											);
+		}
+		
+		private object Invoke(object _o, string _method, object[] _args)
+		{
+			 return _o.GetType().InvokeMember(
+									_method, 
+									BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod, 
+									null, 
+									_o, 
+									_args
+											);
 		}
 		
 		[Test]
@@ -95,7 +119,7 @@ namespace OneCService2
 		
 		[Test]
 		public void TestSerialize()
-		{
+		{			
 			V81Adapter adapter = new V81Adapter();
 			adapter.Logger = new ConsoleLogger();
 			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
@@ -106,20 +130,24 @@ namespace OneCService2
 			adapter.Init();
 			try
 			{
+				//Примитив
 				object o = adapter.ExecuteScript("результат=2+3;");
 				XmlNode node = adapter.Serialize(o);
 				Assert.AreEqual(node.Value, "5");
 				
+				//Объект
 				o = adapter.ExecuteScript("результат=Справочники.Номенклатура.НайтиПоКоду(1);");
 				node = adapter.Serialize(o);
 				
 				WriteXml(node);
 				
+				//Массив
 				o = adapter.ExecuteScript("э=Справочники.Номенклатура.НайтиПоКоду(1); м = Новый Массив(); м.Добавить(э);м.Добавить(э); результат=м;");
 				node = adapter.Serialize(o);
 				
 				WriteXml(node);
 				
+				//Структура
 				o = adapter.ExecuteScript("с = Новый Структура(); с.Вставить(\"ЭтоКлюч\", \"ЭтоЗначение\"); с.Вставить(\"ЭтоКлюч1\", \"ЭтоЗначение1\"); результат=с;");
 				node = adapter.Serialize(o);
 				
@@ -134,6 +162,7 @@ namespace OneCService2
 		[Test]
 		public void TestTypeCheck()
 		{
+			//Определение типов
 			Assert.IsTrue(V81Adapter.isDouble("0.1"));
 			Assert.IsTrue(V81Adapter.isInt("12"));						
 			Assert.IsTrue(V81Adapter.isBool("True"));
@@ -148,6 +177,7 @@ namespace OneCService2
 		[Test]
 		public void TestSimpleDeSerialize()
 		{			
+			//Примитивные типы
 			V81Adapter adapter = new V81Adapter();
 			XmlNode dateString = adapter.Serialize(DateTime.Now);
 			XmlNode intString = adapter.Serialize(12);
@@ -174,6 +204,7 @@ namespace OneCService2
 			adapter.Init();
 			try
 			{
+				//Массив
 				object o = adapter.ExecuteScript(
 								"м = Новый Массив(); м.Добавить(\"ЙЦУКЕН\"); результат=м;"
 												);
@@ -181,6 +212,37 @@ namespace OneCService2
 				
 				o = adapter.DeSerialize(node);
 				Assert.NotNull(o);
+				Assert.AreEqual(Invoke(o, "Получить", new object[] {0}), "ЙЦУКЕН");
+
+				//Структура
+				o = adapter.ExecuteScript(
+								"с = Новый Структура(); с.Вставить(\"A\", \"1\"); с.Вставить(\"B\", 2); результат=с;"
+										 );
+								
+				node = adapter.Serialize(o);				
+				o = adapter.DeSerialize(node);
+				Assert.NotNull(o);
+				
+				Assert.AreEqual(GetProperty(o, "A"), 1);
+				Assert.AreEqual(GetProperty(o, "B"), 2);
+				
+				//Объект
+				o = adapter.ExecuteScript("результат=Справочники.Номенклатура.НайтиПоКоду(1);");
+				node = adapter.Serialize(o);
+				o = adapter.DeSerialize(node);
+				Assert.NotNull(o);
+				Assert.AreEqual(GetProperty(o, "Код"), 1);
+				
+				//Структура с объектом
+				o = adapter.ExecuteScript(
+								"с = Новый Структура(); с.Вставить(\"A\", Справочники.Номенклатура.НайтиПоКоду(1)); с.Вставить(\"B\", 2); результат=с;"								
+										 );
+				node = adapter.Serialize(o);				
+				o = adapter.DeSerialize(node);
+				Assert.NotNull(o);
+				
+				Assert.AreEqual(GetProperty(GetProperty(o, "A"), "Код"), 1);
+				Assert.AreEqual(GetProperty(o, "B"), 2);
 			}
 			finally
 			{
