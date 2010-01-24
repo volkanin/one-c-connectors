@@ -22,7 +22,7 @@ namespace OneCService2
 		public static readonly string OneCServiceArrayElement = "onecservice-array";
 		public static readonly string OneCServiceStructElement = "onecservice-struct";
 		
-		private static Regex isDoubleRegex = new Regex("^\\d+\\.?\\d+$");		
+		private static Regex isDoubleRegex = new Regex("^\\s*\\d+(\\.\\d+)?\\s*$");		
 		private static Regex   isBoolRegex = new Regex("^(true)|(false)$");
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
