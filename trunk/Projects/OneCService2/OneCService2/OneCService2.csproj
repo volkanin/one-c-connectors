@@ -70,6 +70,7 @@
     <Compile Include="ResultSet.cs" />
     <Compile Include="SimpleLogger.cs" />
     <Compile Include="TestAdapter.cs" />
+    <Compile Include="TestPool.cs" />
     <Compile Include="V81Adapter.cs" />
   </ItemGroup>
 </Project>

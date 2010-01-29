@@ -25,7 +25,7 @@ namespace OneCService2
 		private static Regex isDoubleRegex = new Regex("^\\s*\\d+(\\.\\d+)?\\s*$");		
 		private static Regex   isBoolRegex = new Regex("^(true)|(false)$");
 	
-		private Guid                             guid = new Guid();
+		private Guid                             guid = Guid.NewGuid();
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
@@ -41,6 +41,7 @@ namespace OneCService2
 		/*Настройки*/
 		public Dictionary<string, string> Parameters
 		{
+			set {parameters = value;}
 			get {return parameters;}
 		}
 		
