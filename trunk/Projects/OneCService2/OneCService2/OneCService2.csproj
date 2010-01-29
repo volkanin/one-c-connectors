@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="AbstractAdapter.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="ConnectionPool.cs" />
     <Compile Include="ConsoleLogger.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="OneCService2.cs" />

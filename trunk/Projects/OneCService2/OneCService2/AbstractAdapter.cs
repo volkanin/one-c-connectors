@@ -24,11 +24,19 @@ namespace OneCService2
 		
 		private static Regex isDoubleRegex = new Regex("^\\s*\\d+(\\.\\d+)?\\s*$");		
 		private static Regex   isBoolRegex = new Regex("^(true)|(false)$");
+	
+		private Guid                             guid = new Guid();
 		
 		private Dictionary<string, string> parameters = new Dictionary<string, string>();
 		private ILogger                        logger = null;
 		private IntPtr                  connectionPtr = IntPtr.Zero;
 		private object                     connection = null;
+		
+		/*Идентификтор соединения (по сути идентификатор адаптера)*/
+		public Guid Guid
+		{
+			get {return guid;}
+		}
 		
 		/*Настройки*/
 		public Dictionary<string, string> Parameters
