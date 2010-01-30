@@ -201,6 +201,10 @@ namespace OneCService2
 		public ResultSet ExecuteScriptForResultSet(string _script)
 		{
 			object o = ExecuteScript(_script);
+			if (o == null)
+			{
+				o = "";
+			}
 			ResultSet resultSet = new ResultSet();
 			resultSet.ColumnNames.Add("value");
 			resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
@@ -214,9 +218,34 @@ namespace OneCService2
 		}
 		
 		public abstract object ExecuteMethod(string _methodName, object[] _parameters);		
-		public ResultSet ExecuteMethodForResultSet(string _methodName, object[] _parameters)
+		public ResultSet ExecuteMethodForResultSet(string _methodName, XmlNode[] _parameters)
 		{
-			return null;
+			if (_parameters == null)
+			{
+				_parameters = new XmlNode[]{};
+			}
+			object[] objectParams = new object[_parameters.Length];
+			for (int i=0; i<_parameters.Length; i++)
+			{
+				objectParams[i] = DeSerialize(_parameters[i]);
+			}
+			object result = ExecuteMethod(_methodName, objectParams);
+			if (result == null)
+			{
+				result = "";
+			}
+			
+			ResultSet resultSet = new ResultSet();
+			resultSet.ColumnNames.Add("value");
+			resultSet.ColumnTypes.Add(GetTypeForValue(result).ToString());
+			
+			Row row = new Row();
+						
+			row.ValuesList.Add(Serialize(result));
+			
+			resultSet.Rows.Add(row);
+				
+			return resultSet;						
 		}
 		
 		public void Dispose()

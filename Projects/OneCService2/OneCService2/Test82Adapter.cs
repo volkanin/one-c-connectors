@@ -130,5 +130,60 @@ namespace OneCService2
 				adapter.Done();
 			}
 		}
+		
+		[Test]
+		public void TestExecuteRequest()
+		{
+			V82Adapter adapter = new V82Adapter();
+			adapter.Logger = new ConsoleLogger();
+			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test82");
+			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
+			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
+			
+			adapter.Init();
+			try
+			{
+				ResultSet rs = adapter.ExecuteRequest("ВЫБРАТЬ Код, Наименование ИЗ Справочник.Номенклатура");		
+				Assert.AreEqual(rs.ColumnNames[0], "Код");
+				Assert.IsTrue(rs.Rows.Count>0);
+				Assert.AreEqual(rs.Rows[0].Values[0].Value, "1");
+				Assert.AreEqual(rs.Rows[0].Values[1].Value, "Товар 1");
+			}
+			finally
+			{
+				adapter.Done();
+			}	
+		}
+		
+		[Test]
+		public void TestExecuteMethod()
+		{
+			V82Adapter adapter = new V82Adapter();
+			adapter.Logger = new ConsoleLogger();
+			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test82");
+			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
+			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
+			
+			adapter.Init();
+			try
+			{
+				XmlNode firstNode = adapter.Serialize("1");
+				XmlNode secondNode = adapter.Serialize("ЙЦУКЕН");
+				XmlNode[] na = new XmlNode[] {firstNode, secondNode};
+				
+				ResultSet rs = adapter.ExecuteMethodForResultSet("СобратьМассив", na);	
+				Assert.AreEqual(rs.ColumnNames[0], "value");
+				Assert.AreEqual(rs.ColumnTypes[0], SupportedType.ARRAY.ToString());
+				Assert.IsTrue(rs.Rows.Count>0);
+				object o = adapter.DeSerialize(rs.Rows[0].Values[0]);
+				Assert.AreEqual(Invoke(o, "Получить", new object[] {1}), "ЙЦУКЕН");
+			}
+			finally
+			{
+				adapter.Done();
+			}	
+		}
 	}
 }
