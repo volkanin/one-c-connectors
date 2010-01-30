@@ -53,10 +53,15 @@ namespace OneCService2
 			set {serverConnectionStringTemplate = value;}
 			get {return serverConnectionStringTemplate;}
 		}
+		
+		protected virtual string GetProgId()
+		{
+			return "V81.ComConnector";
+		}
 						
 		public override void Init()
 		{
-			comConnector = CreateInstanceByProgId("V81.ComConnector");
+			comConnector = CreateInstanceByProgId(GetProgId());
 			string connectionString = null;
 			if (Parameters[ModeParam].Equals("Server"))
 			{

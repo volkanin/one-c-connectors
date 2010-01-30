@@ -69,8 +69,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResultSet.cs" />
     <Compile Include="SimpleLogger.cs" />
+    <Compile Include="Test82Adapter.cs" />
     <Compile Include="TestAdapter.cs" />
     <Compile Include="TestPool.cs" />
     <Compile Include="V81Adapter.cs" />
+    <Compile Include="V82Adapter.cs" />
   </ItemGroup>
 </Project>
