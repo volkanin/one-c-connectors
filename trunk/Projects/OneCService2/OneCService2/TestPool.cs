@@ -92,7 +92,12 @@ namespace OneCService2
 				
 				pool.ReleaseConnection(adapter1);
 				pool.ReleaseConnection(adapter2);
-				pool.ReleaseConnection(adapter3);								
+				pool.ReleaseConnection(adapter3);		
+				
+				/*Берем и не отдаем назад соединение - должно все равно закрыться*/
+				adapter1 = pool.GetConnection("PoolUserName", "PoolPassword");
+				
+				Assert.IsTrue(true);
 			}
 			finally
 			{
