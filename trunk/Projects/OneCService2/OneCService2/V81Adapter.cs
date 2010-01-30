@@ -109,6 +109,8 @@ namespace OneCService2
 			object result = Invoke(request, "Выполнить", new object[] {});
 			object row = Invoke(result, "Выбрать", new object[] {});
 			
+			Invoke(row, "Следующий", new object[] {});
+			
 			stringType = Invoke(
 							Invoke(
 									GetProperty(
@@ -151,7 +153,7 @@ namespace OneCService2
 							"Получить", new object[] {0}
 							   );			
 		
-			Invoke(row, "Следующий", new object[] {});
+			
 			ReleaseRCW(row);
 			ReleaseRCW(result);
 			ReleaseRCW(request);
@@ -225,7 +227,7 @@ namespace OneCService2
 		
 		public override XmlNode Serialize(object _o)
 		{
-			XmlNode resultNode = null;						
+			XmlNode resultNode = null;			
 			
 			Object o = GetObjectByRef(_o);
 			
@@ -451,6 +453,7 @@ namespace OneCService2
 			}			
 		}
 		
+		/*Полезные методы*/
 		public override object ExecuteScript(string _script)
 		{			
 			return Invoke(Connection, "OneCService_ВыполнитьСтроку", new object[] {_script});						    
@@ -458,12 +461,76 @@ namespace OneCService2
 		
 		public override ResultSet ExecuteRequest(string _request)
 		{
-			throw new NotImplementedException();
+			object request = Invoke(Connection, "NewObject", new object[] {"Запрос", _request});
+			object result = Invoke(request, "Выполнить", new object[] {});
+			try
+			{
+				ResultSet resultSet = new ResultSet();
+				if ((bool)Invoke(result, "Пустой", new object[] {}))
+				{
+					return resultSet;
+				}
+				else
+				{
+					object row = Invoke(result, "Выбрать", new object[] {});
+					try
+					{
+						int columnCount = (int)Invoke(
+												GetProperty(result, "Колонки"), "Количество", new object[] {}
+													 );
+						/*Заполним названия колонок*/
+						for (int i=0; i<columnCount; i++)
+						{
+							string columnName = 
+									(string)GetProperty(
+											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {i}), 
+											"Имя"
+							  		  				  );
+							resultSet.ColumnNames.Add(columnName);							
+						}
+						/*Заполним данные и типы*/
+						while ((bool)Invoke(row, "Следующий", new object[] {}))
+						{
+							Row newRow = new Row();
+							for (int i=0; i<columnCount; i++)
+							{
+								object o = Invoke(row, "Получить", new object[] {i});
+								/*Добавим информацию о типе если нужно и есть возможность*/
+								if ((resultSet.ColumnTypes.Count<(i+1)) && (o != null))
+								{
+									resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
+								}
+								if (o == null)
+								{
+									newRow.ValuesList.Add(Serialize(""));
+								}
+								else
+								{
+									newRow.ValuesList.Add(Serialize(o));
+								}
+							}
+							
+							resultSet.Rows.Add(newRow);
+						}
+						
+						return resultSet;
+					}
+					finally
+					{
+						ReleaseRCW(row);
+					}
+				}
+			}
+			finally
+			{				
+				ReleaseRCW(result);
+				ReleaseRCW(request);
+			}						
 		}
 		
 		public override object ExecuteMethod(string _methodName, object[] _parameters)
 		{
-			throw new NotImplementedException();
+			return Invoke(Connection, _methodName, _parameters);
 		}
 	}
 }
