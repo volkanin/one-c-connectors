@@ -296,7 +296,51 @@ namespace OneCService2
 				try
 				{
 					Invoke(writeXml, "УстановитьСтроку", new object[] {});
-					Invoke(xdtoSer, "ЗаписатьXML", new object[] {writeXml, o});
+					//Объект из импортированной схемы 
+					if ((bool)Invoke(Connection, "OneCService_ЭтоXDTO", new object[] {o}))
+					{
+						//ФабрикаXDTO.Пакеты.Получить("http://goods").КорневыеСвойства.Получить(0).ЛокальноеИмя;
+						//Получим список кореневых элементов, чтобы скорректировать их неправильную геренацию 1С'ом
+						string ns = (string)GetProperty(Invoke(o, "Тип", new object[] {}), "URIПространстваИмен");
+						object rootElements = 
+							GetProperty(
+								Invoke(
+										GetProperty(
+												GetProperty(Connection, "ФабрикаXDTO"), "Пакеты"
+								  	   		   	   ),
+										"Получить",
+										new object[] {ns}
+									 ),
+								"КорневыеСвойства"
+								  	   );
+						string rootElementName = null;
+						if (((int)Invoke(rootElements, "Количество", new object[] {}))>0)
+						{
+							rootElementName = (string)GetProperty(
+												Invoke(rootElements, "Получить", new object[] {0}),
+												"ЛокальноеИмя"
+														 		);
+						}
+						if (rootElementName == null)
+						{
+							Invoke(
+									GetProperty(xdtoSer, "Фабрика"), 
+									"ЗаписатьXML", new object[] {writeXml, o}
+							  	  );
+						}
+						else
+						{
+							Invoke(
+									GetProperty(xdtoSer, "Фабрика"), 
+									"ЗаписатьXML", new object[] {writeXml, o, rootElementName}
+							  	  );
+						}
+					}
+					//Внутренние объекты 1С
+					else
+					{
+						Invoke(xdtoSer, "ЗаписатьXML", new object[] {writeXml, o});
+					}
 					//Заполнем буфер текстом xml представления 1с'овского объекта
 					string xmlString = (string)Invoke(writeXml, "Закрыть", new object[] {});				
 					using (StringReader sr = new StringReader(xmlString))					
@@ -434,8 +478,24 @@ namespace OneCService2
 						object readXml = Invoke(Connection, "NewObject", new object[] {"ЧтениеXML"});
 						try
 						{
-							Invoke(readXml, "УстановитьСтроку", new object[] {sw.ToString()});			
-							object o = Invoke(xdtoSer, "ПрочитатьXML", new object[] {readXml});
+							Invoke(readXml, "УстановитьСтроку", new object[] {sw.ToString()});	
+							object o = null;							
+						    try
+							{	
+								o = Invoke(xdtoSer, "ПрочитатьXML", new object[] {readXml});
+							}
+							catch (Exception _e)
+							{			
+								Invoke(readXml, "Закрыть", new object[] {});	
+								ReleaseRCW(readXml);
+								readXml = Invoke(Connection, "NewObject", new object[] {"ЧтениеXML"});
+								Invoke(readXml, "УстановитьСтроку", new object[] {sw.ToString()});	
+								
+								o = Invoke(
+										   GetProperty(xdtoSer, "Фабрика"), 
+										   "ПрочитатьXML", new object[] {readXml}
+										  );								
+							}
 							Invoke(readXml, "Закрыть", new object[] {});					
 							return o;
 						}

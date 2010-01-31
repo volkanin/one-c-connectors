@@ -185,5 +185,44 @@ namespace OneCService2
 				adapter.Done();
 			}	
 		}
+		
+		[Test]
+		public void TestExternalXSD()
+		{
+			V82Adapter adapter = new V82Adapter();
+			adapter.Logger = new ConsoleLogger();
+			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test82");
+			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
+			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
+			
+			adapter.Init();
+			try
+			{
+				object o = adapter.ExecuteMethod("OCS2_ТоварВGood", new object[] {1});
+				Assert.IsNotNull(o);
+				Console.WriteLine(o);
+				XmlNode node = adapter.Serialize(o);				
+				
+				WriteXml(node);
+				
+				o = adapter.DeSerialize(node);
+				
+				Assert.AreEqual(Invoke(
+									Invoke(o, "Свойства", new object[] {}),
+									"Количество",
+									new object[]{}
+								      ), 1);
+				
+				o = adapter.ExecuteMethod("OCS2_ИзвлечьGoodCode", new object[] {o});					
+				Assert.IsNotNull(o);
+				Assert.AreEqual(o, "1");
+				
+			}
+			finally
+			{
+				adapter.Done();
+			}
+		}
 	}
 }
