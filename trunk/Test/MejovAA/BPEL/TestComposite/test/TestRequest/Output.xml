@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <m:TestRequestResponse xmlns:m="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL">
+      <result xmlns:a="http://OneCService2/types" xmlns:msgns="http://OneCService2">
+        <a:ColumnNames xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+          <b:string>Поле1</b:string>
+        </a:ColumnNames>
+        <a:ColumnTypes xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
+          <b:string>INTEGER</b:string>
+        </a:ColumnTypes>
+        <a:Error/>
+        <a:Rows>
+          <a:Row>
+            <a:Values>1</a:Values>
+          </a:Row>
+        </a:Rows>
+      </result>
+    </m:TestRequestResponse>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

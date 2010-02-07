@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="system">
+    <system systemId="http://127.0.0.1:9000/OneCService2?xsd=xsd0" uri="TestBPEL/src/_references/_cache/127.0.0.1_9000/OneCService2.xsd_xsd0.xsd"/>
+    <system systemId="http://127.0.0.1:9000/OneCService2?xsd=xsd2" uri="TestBPEL/src/_references/_cache/127.0.0.1_9000/OneCService2.xsd_xsd2.xsd"/>
+    <system systemId="http://127.0.0.1:9000/OneCService2?xsd=xsd3" uri="TestBPEL/src/_references/_cache/127.0.0.1_9000/OneCService2.xsd_xsd3.xsd"/>
+    <system systemId="http://127.0.0.1:9000/OneCService2?xsd=xsd1" uri="TestBPEL/src/_references/_cache/127.0.0.1_9000/OneCService2.xsd_xsd1.xsd"/>
+</catalog>
