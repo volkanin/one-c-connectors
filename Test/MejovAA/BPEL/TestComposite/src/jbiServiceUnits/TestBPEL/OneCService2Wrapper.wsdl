@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="OneCService2Wrapper" targetNamespace="http://enterprise.netbeans.org/bpel/OneCService2Wrapper" xmlns:tns="http://enterprise.netbeans.org/bpel/OneCService2Wrapper" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype" xmlns:ns="http://OneCService2">
+    <import location="OneCService2.wsdl" namespace="http://OneCService2"/>
+    <plnk:partnerLinkType name="OneCService2LinkType">
+        <plnk:role name="OneCService2Role" portType="ns:OneCService2"/>
+    </plnk:partnerLinkType>
+</definitions>
+

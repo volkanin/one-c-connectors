@@ -31,7 +31,30 @@ namespace OneCService2
 												string _request
 							    				 )
 		{
-			return null;
+			try
+			{
+				if (ConnectionPool.Pools.ContainsKey(_connectionName))
+				{
+					AbstractAdapter adapter = ConnectionPool.Pools[_connectionName].GetConnection(_poolUserName, _poolPassword);
+					try
+					{
+						return adapter.ExecuteRequest(_request);
+					}
+					finally
+					{
+						ConnectionPool.Pools[_connectionName].ReleaseConnection(adapter);
+					}
+				}
+				else
+				{
+					throw new Exception("Connection with name '"+_connectionName+"' not found");
+				}
+			}
+			catch (Exception _e)
+			{
+				SimpleLogger.DefaultLogger.Severe("Exception in ExecuteRequest: "+_e.ToString());
+				throw _e;
+			}
 		}
 		
 		

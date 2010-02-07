@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jbi xmlns="http://java.sun.com/xml/ns/jbi" xmlns:ns1="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequestBPEL" xmlns:ns2="http://OneCService2" xmlns:ns3="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" version="1.0">
+    <services binding-component="true">
+        <provides endpoint-name="BasicHttpBinding_OneCService2" interface-name="ns2:OneCService2" service-name="ns2:OneCService2"/>
+        <consumes endpoint-name="TestRequestWSDLPort" interface-name="ns3:TestRequestWSDLPortType" service-name="ns3:TestRequestWSDLService"/>
+    </services>
+</jbi>

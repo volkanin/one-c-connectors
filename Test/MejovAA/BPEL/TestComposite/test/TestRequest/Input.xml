@@ -1,0 +1,10 @@
+<soapenv:Envelope xsi:schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tes="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL">
+  <soapenv:Body>
+    <tes:TestRequest>
+      <_connectionName>Test81</_connectionName>
+      <_userName>PoolUserName</_userName>
+      <_password>PoolPassword</_password>
+      <_request>ВЫБРАТЬ 1</_request>
+    </tes:TestRequest>
+  </soapenv:Body>
+</soapenv:Envelope>
