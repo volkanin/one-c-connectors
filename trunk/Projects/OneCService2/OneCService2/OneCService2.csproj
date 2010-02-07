@@ -63,7 +63,9 @@
     <Compile Include="ConnectionPool.cs" />
     <Compile Include="ConsoleLogger.cs" />
     <Compile Include="ILogger.cs" />
+    <Compile Include="IOneCWebService2.cs" />
     <Compile Include="OneCService2.cs" />
+    <Compile Include="OneCWebService2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
