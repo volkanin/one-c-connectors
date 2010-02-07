@@ -14,29 +14,28 @@ namespace OneCService2
 {
 	public class ServiceConfig : ConfigurationSection
 	{
-		[ConfigurationProperty("port")]
+		[ConfigurationProperty("Port")]
 		public int Port
 		{
-			get{return (int)this["port"];}
-             set{this["port"] = value; }
+			get{return (int)this["Port"];}
+            set{this["Port"] = value; }
 		}
 		
-		[ConfigurationProperty("host")]
+		[ConfigurationProperty("Host")]
 		public string Host
 		{
-			get{return (string)this["host"];}
-            set{this["host"] = value; }
+			get{return (string)this["Host"];}
+            set{this["Host"] = value; }
 		}
 	}	
 	
 	public class Connection 
 	{
-		private string name;
+		private Dictionary<string, string> parameters = new Dictionary<string, string>();		
 		
-		public string Name
+		public Dictionary<string, string> Parameters
 		{
-			get {return name;}
-			set {name = value;}
+			get {return parameters;}			
 		}
 	}
 	
@@ -51,10 +50,22 @@ namespace OneCService2
             Dictionary<string, Connection> connections = new Dictionary<string, Connection>();            
             XmlNodeList nodes = _section.SelectNodes("Connection");
                         
-            foreach (XmlNode node in nodes){
+            foreach (XmlNode node in nodes)
+            {
             	Connection connection = new Connection();
-                connection.Name = node.Attributes["name"].InnerText;                
-                connections.Add(connection.Name, connection);
+            	foreach (XmlAttribute attr in node.Attributes)
+            	{
+            		connection.Parameters.Add(attr.Name, attr.Value);
+            	}            	                
+            	
+            	if (connection.Parameters.ContainsKey("Name"))
+            	{
+            		connections.Add(connection.Parameters["Name"], connection);
+            	}
+            	else
+            	{
+            		throw new Exception("Connection must contain attribute Name");
+            	}
             }
             return connections;            
         }

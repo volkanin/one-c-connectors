@@ -43,6 +43,67 @@ namespace OneCService2
 	/*Пул соединений*/
 	public class ConnectionPool : IDisposable
 	{	
+		private static Dictionary<string, ConnectionPool> pools = new Dictionary<string, ConnectionPool>();
+		
+		public static Dictionary<string, ConnectionPool> Pools
+		{
+			get {return pools;}
+		}
+		
+		public static void PoolsPrepare(ILogger _logger)
+		{
+			Dictionary<string, Connection> connectionsConfig = Config.Connections;
+			
+			foreach (string name in connectionsConfig.Keys)
+			{
+				ConnectionPool pool = new ConnectionPool();
+				pool.Logger = _logger;
+				
+				_logger.Info("Prepare pool:");
+				foreach (string parameterName in connectionsConfig[name].Parameters.Keys)
+				{
+					string val = connectionsConfig[name].Parameters[parameterName];
+					_logger.Info("		"+parameterName+"="+val);
+					pool.Parameters.Add(parameterName, val);
+					
+				}											
+				
+				pools.Add(name, pool);
+			}			
+		}
+		
+		public static void PoolsInit(ILogger _logger)
+		{			
+			foreach (string name in pools.Keys)
+			{
+				_logger.Info("Init pool: "+name);
+				pools[name].Init();				
+			}
+		}
+		
+		public static void PoolsDone(ILogger _logger)
+		{
+			foreach (string name in pools.Keys)
+			{
+				try
+				{
+					_logger.Info("Done pool"+name);
+					pools[name].Done();										
+				}
+				catch (Exception _e)
+				{
+					try
+					{
+						_logger.Info("Exception in PoolsDone: "+_e.ToString());
+					}
+					catch (Exception _x)
+					{								
+					}
+				}
+			}
+		}		
+		
+		
 		public static readonly string     PoolSizeParam = "PoolSize";
 		public static readonly string         NameParam = "Name";
 		public static readonly string  AdapterTypeParam = "AdapterType";
@@ -100,7 +161,7 @@ namespace OneCService2
 		
 		public Dictionary<string, string> Parameters
 		{
-			get {return parameters;}
+			get {return parameters;}			
 		}
 		
 		public ConnectionPool()
