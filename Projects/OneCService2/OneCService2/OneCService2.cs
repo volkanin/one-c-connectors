@@ -13,11 +13,15 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Text;
 
+using System.ServiceModel;
+
 namespace OneCService2
 {
 	public class OneCService2 : ServiceBase
 	{
 		public const string MyServiceName = "OneCService2";
+		
+		private ServiceHost serviceHost = null;
 		
 		public OneCService2()
 		{
@@ -39,15 +43,16 @@ namespace OneCService2
 			SimpleLogger.CreateDefaultLogger(@"D:\out.log");
 			try
 			{
-				ConnectionPool.PoolsPrepare(SimpleLogger.DefaultLogger);
-				try
-				{
-					ConnectionPool.PoolsInit(SimpleLogger.DefaultLogger);
-				}
-				finally
-				{
-					ConnectionPool.PoolsDone(SimpleLogger.DefaultLogger);
-				}
+				string host = Config.ServiceConfig.Host;
+				int port = Config.ServiceConfig.Port;				
+				SimpleLogger.DefaultLogger.Info("Starting OneCService2: host="+host+" port="+port);
+				
+				ConnectionPool.PoolsPrepare(SimpleLogger.DefaultLogger);								
+				ConnectionPool.PoolsInit(SimpleLogger.DefaultLogger);
+				
+				serviceHost = OneCWebService2.CreateServiceHost(host, port);
+				serviceHost.Open();
+
 			}
 			catch (Exception _e)
 			{
@@ -57,7 +62,16 @@ namespace OneCService2
 		
 		
 		protected override void OnStop()
-		{
+		{	
+			try
+			{
+				serviceHost.Close();
+			}
+			catch (Exception _e)
+			{
+				SimpleLogger.DefaultLogger.Severe("Exception in OnStop: "+_e.ToString());
+			}						
+			ConnectionPool.PoolsDone(SimpleLogger.DefaultLogger);			
 			SimpleLogger.DefaultLogger.Dispose();
 		}
 	}
