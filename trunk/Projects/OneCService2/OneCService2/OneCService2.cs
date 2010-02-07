@@ -39,8 +39,15 @@ namespace OneCService2
 			SimpleLogger.CreateDefaultLogger(@"D:\out.log");
 			try
 			{
-				SimpleLogger.DefaultLogger.Info(Config.ServiceConfig.Host);			
-				SimpleLogger.DefaultLogger.Info(Config.Connections.ContainsKey("TestConnection").ToString());
+				ConnectionPool.PoolsPrepare(SimpleLogger.DefaultLogger);
+				try
+				{
+					ConnectionPool.PoolsInit(SimpleLogger.DefaultLogger);
+				}
+				finally
+				{
+					ConnectionPool.PoolsDone(SimpleLogger.DefaultLogger);
+				}
 			}
 			catch (Exception _e)
 			{
