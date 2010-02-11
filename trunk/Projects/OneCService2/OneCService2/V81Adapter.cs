@@ -521,6 +521,8 @@ namespace OneCService2
 		
 		public override ResultSet ExecuteRequest(string _request)
 		{
+			RestoreConnectionRCW();
+			
 			object request = Invoke(Connection, "NewObject", new object[] {"Запрос", _request});
 			object result = Invoke(request, "Выполнить", new object[] {});
 			try
@@ -555,18 +557,25 @@ namespace OneCService2
 							for (int i=0; i<columnCount; i++)
 							{
 								object o = Invoke(row, "Получить", new object[] {i});
-								/*Добавим информацию о типе если нужно и есть возможность*/
-								if ((resultSet.ColumnTypes.Count<(i+1)) && (o != null))
+								try
 								{
-									resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
+									/*Добавим информацию о типе если нужно и есть возможность*/
+									if ((resultSet.ColumnTypes.Count<(i+1)) && (o != null))
+									{
+										resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
+									}
+									if (o == null)
+									{
+										newRow.ValuesList.Add(Serialize(""));
+									}
+									else
+									{
+										newRow.ValuesList.Add(Serialize(o));
+									}
 								}
-								if (o == null)
+								finally
 								{
-									newRow.ValuesList.Add(Serialize(""));
-								}
-								else
-								{
-									newRow.ValuesList.Add(Serialize(o));
+									ReleaseRCW(o);
 								}
 							}
 							

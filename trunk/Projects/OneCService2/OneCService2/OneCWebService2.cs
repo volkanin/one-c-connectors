@@ -30,15 +30,17 @@ namespace OneCService2
 												string _poolPassword, 
 												string _request
 							    				 )
-		{
+		{			
 			try
 			{
 				if (ConnectionPool.Pools.ContainsKey(_connectionName))
 				{
+					SimpleLogger.DefaultLogger.Info("QQQQ");
 					AbstractAdapter adapter = ConnectionPool.Pools[_connectionName].GetConnection(_poolUserName, _poolPassword);
+					SimpleLogger.DefaultLogger.Info("WWWW");
 					try
 					{
-						return adapter.ExecuteRequest(_request);
+						return adapter.ExecuteRequest(_request);						
 					}
 					finally
 					{
@@ -53,7 +55,9 @@ namespace OneCService2
 			catch (Exception _e)
 			{
 				SimpleLogger.DefaultLogger.Severe("Exception in ExecuteRequest: "+_e.ToString());
-				throw _e;
+				ResultSet resultSet = new ResultSet();
+				resultSet.Error = _e.ToString();
+				return resultSet;
 			}
 		}
 		
@@ -83,26 +87,39 @@ namespace OneCService2
 		public static ServiceHost CreateServiceHost(string _hostName, int _port)
 		{
 			Uri uri = new Uri("http://"+_hostName+":"+_port+"/OneCService2");
-			ServiceHost serviceHost = new ServiceHost(typeof(OneCWebService2), uri);
+			ServiceHost serviceHost = new ServiceHost(typeof(OneCWebService2), uri);						
 			
-			BasicHttpBinding binding = new BasicHttpBinding();
-			binding.Namespace = "http://OneCService2";
+			WSHttpBinding binding = new WSHttpBinding();
+			binding.Namespace = "http://OneCService2";		
+			binding.Security.Mode = SecurityMode.None;	
+			binding.MaxBufferPoolSize = 1000*1000;
+			binding.MaxReceivedMessageSize = 1000*1000;			
 			
-			ServiceMetadataBehavior b = serviceHost.Description.Behaviors.Find<ServiceMetadataBehavior>();
+			ServiceMetadataBehavior b = serviceHost.Description.Behaviors.Find<ServiceMetadataBehavior>();			
 			
-			serviceHost.AddServiceEndpoint(typeof(IOneCWebService2), binding, uri);
+			serviceHost.AddServiceEndpoint(typeof(IOneCWebService2), binding, uri, uri);			
 			
 			if (b == null)
 			{
-				b = new ServiceMetadataBehavior();
-				b.HttpGetEnabled = true;
-				
+				b = new ServiceMetadataBehavior();				
+								
 				serviceHost.Description.Behaviors.Add(b);
-			}
-			else
+			}			
+			
+			b.HttpGetEnabled = true;			
+			
+			ServiceThrottlingBehavior t = serviceHost.Description.Behaviors.Find<ServiceThrottlingBehavior>();
+			
+			if (t == null)
 			{
-				b.HttpGetEnabled = true;
+				t = new ServiceThrottlingBehavior();
+				
+				serviceHost.Description.Behaviors.Add(t);
 			}
+			
+			t.MaxConcurrentCalls = 20;
+			t.MaxConcurrentInstances = 20;
+			t.MaxConcurrentSessions = 20;			
 			
 			return serviceHost;
 		}
