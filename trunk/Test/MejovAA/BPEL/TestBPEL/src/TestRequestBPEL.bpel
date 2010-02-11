@@ -13,12 +13,12 @@
     <import namespace="http://OneCService2" location="OneCService2.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
     <import namespace="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" location="TestRequestWSDL.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
     <partnerLinks>
-        <partnerLink name="TestRequestLink" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" partnerLinkType="tns:TestRequestWSDL" myRole="TestRequestWSDLPortTypeRole"/>
         <partnerLink name="OneCLink" xmlns:tns="http://enterprise.netbeans.org/bpel/OneCService2Wrapper" partnerLinkType="tns:OneCService2LinkType" partnerRole="OneCService2Role"/>
+        <partnerLink name="TestRequestLink" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" partnerLinkType="tns:TestRequestWSDL" myRole="TestRequestWSDLPortTypeRole"/>
     </partnerLinks>
     <variables>
-        <variable name="ExecuteRequestOut" xmlns:tns="http://OneCService2" messageType="tns:OneCService2_ExecuteRequest_OutputMessage"/>
-        <variable name="ExecuteRequestIn" xmlns:tns="http://OneCService2" messageType="tns:OneCService2_ExecuteRequest_InputMessage"/>
+        <variable name="ExecuteRequestOut" messageType="ns0:OneCService2_ExecuteRequest_OutputMessage"/>
+        <variable name="ExecuteRequestIn" messageType="ns0:OneCService2_ExecuteRequest_InputMessage"/>
         <variable name="TestRequestOut" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" messageType="tns:TestRequestResponse"/>
         <variable name="TestRequestIn" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" messageType="tns:TestRequestRequest"/>
     </variables>
@@ -42,7 +42,7 @@
                 <to>$ExecuteRequestIn.parameters/ns0:_request</to>
             </copy>
         </assign>
-        <invoke name="Invoke1" partnerLink="OneCLink" operation="ExecuteRequest" xmlns:tns="http://OneCService2" portType="tns:OneCService2" inputVariable="ExecuteRequestIn" outputVariable="ExecuteRequestOut"/>
+        <invoke name="Invoke1" partnerLink="OneCLink" operation="ExecuteRequest" portType="ns0:OneCService2" inputVariable="ExecuteRequestIn" outputVariable="ExecuteRequestOut"/>
         <assign name="Assign2">
             <copy>
                 <from>$ExecuteRequestOut.parameters/ns0:ExecuteRequestResult</from>
@@ -52,4 +52,7 @@
         <reply name="Reply1" partnerLink="TestRequestLink" operation="TestRequest" xmlns:tns="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" portType="tns:TestRequestWSDLPortType" variable="TestRequestOut"/>
     </sequence>
 </process>
+
+
+
 

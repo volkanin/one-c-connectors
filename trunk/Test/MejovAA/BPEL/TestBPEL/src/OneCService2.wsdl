@@ -1,1 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?><wsdl:definitions name="OneCService2" targetNamespace="http://OneCService2" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://OneCService2" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"><wsdl:types><xsd:schema targetNamespace="http://OneCService2/Imports"><xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd0" namespace="http://OneCService2"/><xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/><xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd2" namespace="http://OneCService2/types"/><xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/></xsd:schema></wsdl:types><wsdl:message name="OneCService2_ExecuteRequest_InputMessage"><wsdl:part name="parameters" element="tns:ExecuteRequest"/></wsdl:message><wsdl:message name="OneCService2_ExecuteRequest_OutputMessage"><wsdl:part name="parameters" element="tns:ExecuteRequestResponse"/></wsdl:message><wsdl:message name="OneCService2_ExecuteScript_InputMessage"><wsdl:part name="parameters" element="tns:ExecuteScript"/></wsdl:message><wsdl:message name="OneCService2_ExecuteScript_OutputMessage"><wsdl:part name="parameters" element="tns:ExecuteScriptResponse"/></wsdl:message><wsdl:message name="OneCService2_ExecuteMethod_InputMessage"><wsdl:part name="parameters" element="tns:ExecuteMethod"/></wsdl:message><wsdl:message name="OneCService2_ExecuteMethod_OutputMessage"><wsdl:part name="parameters" element="tns:ExecuteMethodResponse"/></wsdl:message><wsdl:portType name="OneCService2"><wsdl:operation name="ExecuteRequest"><wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteRequest" message="tns:OneCService2_ExecuteRequest_InputMessage"/><wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteRequestResponse" message="tns:OneCService2_ExecuteRequest_OutputMessage"/></wsdl:operation><wsdl:operation name="ExecuteScript"><wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteScript" message="tns:OneCService2_ExecuteScript_InputMessage"/><wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteScriptResponse" message="tns:OneCService2_ExecuteScript_OutputMessage"/></wsdl:operation><wsdl:operation name="ExecuteMethod"><wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteMethod" message="tns:OneCService2_ExecuteMethod_InputMessage"/><wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteMethodResponse" message="tns:OneCService2_ExecuteMethod_OutputMessage"/></wsdl:operation></wsdl:portType><wsdl:binding name="BasicHttpBinding_OneCService2" type="tns:OneCService2"><soap:binding transport="http://schemas.xmlsoap.org/soap/http"/><wsdl:operation name="ExecuteRequest"><soap:operation soapAction="http://OneCService2/OneCService2/ExecuteRequest" style="document"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="ExecuteScript"><soap:operation soapAction="http://OneCService2/OneCService2/ExecuteScript" style="document"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation><wsdl:operation name="ExecuteMethod"><soap:operation soapAction="http://OneCService2/OneCService2/ExecuteMethod" style="document"/><wsdl:input><soap:body use="literal"/></wsdl:input><wsdl:output><soap:body use="literal"/></wsdl:output></wsdl:operation></wsdl:binding><wsdl:service name="OneCService2"><wsdl:port name="BasicHttpBinding_OneCService2" binding="tns:BasicHttpBinding_OneCService2"><soap:address location="http://127.0.0.1:9000/OneCService2"/></wsdl:port></wsdl:service></wsdl:definitions>
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="OneCService2" targetNamespace="http://OneCService2" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://OneCService2" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex">
+    <wsp:Policy wsu:Id="WSHttpBinding_OneCService2_policy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <wsaw:UsingAddressing/>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://OneCService2/Imports">
+            <xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd0" namespace="http://OneCService2"/>
+            <xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+            <xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd2" namespace="http://OneCService2/types"/>
+            <xsd:import schemaLocation="http://127.0.0.1:9000/OneCService2?xsd=xsd3" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="OneCService2_ExecuteRequest_InputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteRequest"/>
+    </wsdl:message>
+    <wsdl:message name="OneCService2_ExecuteRequest_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteRequestResponse"/>
+    </wsdl:message>
+    <wsdl:message name="OneCService2_ExecuteScript_InputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteScript"/>
+    </wsdl:message>
+    <wsdl:message name="OneCService2_ExecuteScript_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteScriptResponse"/>
+    </wsdl:message>
+    <wsdl:message name="OneCService2_ExecuteMethod_InputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteMethod"/>
+    </wsdl:message>
+    <wsdl:message name="OneCService2_ExecuteMethod_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ExecuteMethodResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="OneCService2">
+        <wsdl:operation name="ExecuteRequest">
+            <wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteRequest" message="tns:OneCService2_ExecuteRequest_InputMessage"/>
+            <wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteRequestResponse" message="tns:OneCService2_ExecuteRequest_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ExecuteScript">
+            <wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteScript" message="tns:OneCService2_ExecuteScript_InputMessage"/>
+            <wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteScriptResponse" message="tns:OneCService2_ExecuteScript_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ExecuteMethod">
+            <wsdl:input wsaw:Action="http://OneCService2/OneCService2/ExecuteMethod" message="tns:OneCService2_ExecuteMethod_InputMessage"/>
+            <wsdl:output wsaw:Action="http://OneCService2/OneCService2/ExecuteMethodResponse" message="tns:OneCService2_ExecuteMethod_OutputMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="WSHttpBinding_OneCService2" type="tns:OneCService2">
+        <wsp:PolicyReference URI="#WSHttpBinding_OneCService2_policy"/>
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="ExecuteRequest">
+            <soap12:operation soapAction="http://OneCService2/OneCService2/ExecuteRequest" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ExecuteScript">
+            <soap12:operation soapAction="http://OneCService2/OneCService2/ExecuteScript" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ExecuteMethod">
+            <soap12:operation soapAction="http://OneCService2/OneCService2/ExecuteMethod" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="OneCService2">
+        <wsdl:port name="WSHttpBinding_OneCService2" binding="tns:WSHttpBinding_OneCService2">
+            <soap12:address location="http://127.0.0.1:9000/OneCService2"/>
+            <wsa10:EndpointReference>
+                <wsa10:Address>http://127.0.0.1:9000/OneCService2</wsa10:Address>
+            </wsa10:EndpointReference>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

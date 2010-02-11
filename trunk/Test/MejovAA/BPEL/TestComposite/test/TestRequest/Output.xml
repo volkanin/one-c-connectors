@@ -6,15 +6,25 @@
     <m:TestRequestResponse xmlns:m="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL">
       <result xmlns:a="http://OneCService2/types" xmlns:msgns="http://OneCService2">
         <a:ColumnNames xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-          <b:string>Поле1</b:string>
+          <b:string>Товар</b:string>
         </a:ColumnNames>
         <a:ColumnTypes xmlns:b="http://schemas.microsoft.com/2003/10/Serialization/Arrays">
-          <b:string>INTEGER</b:string>
+          <b:string>OBJECT</b:string>
         </a:ColumnTypes>
         <a:Error/>
         <a:Rows>
           <a:Row>
-            <a:Values>1</a:Values>
+            <a:Values>
+              <CatalogObject.Номенклатура xmlns="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <IsFolder>false</IsFolder>
+                <Ref>a1a05f63-fd36-11de-a220-0015584a77b0</Ref>
+                <DeletionMark>false</DeletionMark>
+                <Parent>00000000-0000-0000-0000-000000000000</Parent>
+                <Code>1</Code>
+                <Description>Товар 1</Description>
+                <Дата>2010-01-14T00:00:00</Дата>
+              </CatalogObject.Номенклатура>
+            </a:Values>
           </a:Row>
         </a:Rows>
       </result>

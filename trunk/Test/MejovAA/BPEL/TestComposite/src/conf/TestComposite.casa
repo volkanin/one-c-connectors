@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<casa xmlns="http://java.sun.com/xml/ns/casa" xmlns:ns1="http://OneCService2" xmlns:ns2="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" xmlns:ns3="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequestBPEL" xmlns:xlink="http://www.w3.org/2000/xlink">
+<casa xmlns="http://java.sun.com/xml/ns/casa" xmlns:ns1="http://j2ee.netbeans.org/wsdl/TestBPEL/TestRequestWSDL" xmlns:ns2="http://OneCService2" xmlns:ns3="http://enterprise.netbeans.org/bpel/TestBPEL/TestRequestBPEL" xmlns:xlink="http://www.w3.org/2000/xlink">
     <endpoints>
-        <endpoint endpoint-name="BasicHttpBinding_OneCService2" interface-name="ns1:OneCService2" name="endpoint1" service-name="ns1:OneCService2"/>
-        <endpoint endpoint-name="TestRequestWSDLPort" interface-name="ns2:TestRequestWSDLPortType" name="endpoint2" service-name="ns2:TestRequestWSDLService"/>
-        <endpoint display-name="TestRequestLink" endpoint-name="TestRequestWSDLPortTypeRole_myRole" file-path="TestRequestBPEL.bpel" interface-name="ns2:TestRequestWSDLPortType" name="endpoint3" process-name="TestRequestBPEL" service-name="ns3:TestRequestLink"/>
-        <endpoint display-name="OneCLink" endpoint-name="OneCService2Role_partnerRole" file-path="TestRequestBPEL.bpel" interface-name="ns1:OneCService2" name="endpoint4" process-name="TestRequestBPEL" service-name="ns3:OneCLink"/>
+        <endpoint endpoint-name="TestRequestWSDLPort" interface-name="ns1:TestRequestWSDLPortType" name="endpoint1" service-name="ns1:TestRequestWSDLService"/>
+        <endpoint endpoint-name="WSHttpBinding_OneCService2" interface-name="ns2:OneCService2" name="endpoint2" service-name="ns2:OneCService2"/>
+        <endpoint display-name="TestRequestLink" endpoint-name="TestRequestWSDLPortTypeRole_myRole" file-path="TestRequestBPEL.bpel" interface-name="ns1:TestRequestWSDLPortType" name="endpoint3" process-name="TestRequestBPEL" service-name="ns3:TestRequestLink"/>
+        <endpoint display-name="OneCLink" endpoint-name="OneCService2Role_partnerRole" file-path="TestRequestBPEL.bpel" interface-name="ns2:OneCService2" name="endpoint4" process-name="TestRequestBPEL" service-name="ns3:OneCLink"/>
     </endpoints>
     <service-units>
         <service-engine-service-unit artifacts-zip="TestBPEL.jar" component-name="sun-bpel-engine" defined="true" description="Represents this Service Unit" internal="true" name="TestComposite-TestBPEL" unit-name="TestBPEL" unknown="false" x="163" y="99">
@@ -13,29 +13,29 @@
         </service-engine-service-unit>
         <binding-component-service-unit artifacts-zip="sun-http-binding.jar" component-name="sun-http-binding" description="Represents this Service Unit" name="TestComposite-sun-http-binding" unit-name="sun-http-binding">
             <ports>
-                <port x="67" y="118">
-                    <link xlink:href="../jbiServiceUnits/TestBPEL/OneCService2.wsdl#xpointer(/definitions/service[@name='OneCService2']/port[@name='BasicHttpBinding_OneCService2'])" xlink:type="simple"/>
-                    <consumes endpoint="endpoint1"/>
-                    <provides endpoint="endpoint1"/>
-                </port>
                 <port x="67" y="39">
-                    <link xlink:href="../jbiServiceUnits/TestBPEL/TestRequestWSDL.wsdl#xpointer(/definitions/service[@name='TestRequestWSDLService']/port[@name='TestRequestWSDLPort'])" xlink:type="simple"/>
+                    <link xlink:href="../jbiServiceUnits/TestBPEL/OneCService2.wsdl#xpointer(/definitions/service[@name='OneCService2']/port[@name='WSHttpBinding_OneCService2'])" xlink:type="simple"/>
                     <consumes endpoint="endpoint2"/>
                     <provides endpoint="endpoint2"/>
+                </port>
+                <port x="67" y="132">
+                    <link xlink:href="../jbiServiceUnits/TestBPEL/TestRequestWSDL.wsdl#xpointer(/definitions/service[@name='TestRequestWSDLService']/port[@name='TestRequestWSDLPort'])" xlink:type="simple"/>
+                    <consumes endpoint="endpoint1"/>
+                    <provides endpoint="endpoint1"/>
                 </port>
             </ports>
         </binding-component-service-unit>
     </service-units>
     <connections>
-        <connection consumer="endpoint4" provider="endpoint1" state="unchanged"/>
-        <connection consumer="endpoint2" provider="endpoint3" state="unchanged"/>
+        <connection consumer="endpoint4" provider="endpoint2" state="unchanged"/>
+        <connection consumer="endpoint1" provider="endpoint3" state="unchanged"/>
     </connections>
     <porttypes>
         <link xlink:href="../jbiServiceUnits/TestBPEL/OneCService2.wsdl#xpointer(/definitions/portType[@name='OneCService2'])" xlink:type="simple"/>
         <link xlink:href="../jbiServiceUnits/TestBPEL/TestRequestWSDL.wsdl#xpointer(/definitions/portType[@name='TestRequestWSDLPortType'])" xlink:type="simple"/>
     </porttypes>
     <bindings>
-        <link xlink:href="../jbiServiceUnits/TestBPEL/OneCService2.wsdl#xpointer(/definitions/binding[@name='BasicHttpBinding_OneCService2'])" xlink:type="simple"/>
+        <link xlink:href="../jbiServiceUnits/TestBPEL/OneCService2.wsdl#xpointer(/definitions/binding[@name='WSHttpBinding_OneCService2'])" xlink:type="simple"/>
         <link xlink:href="../jbiServiceUnits/TestBPEL/TestRequestWSDL.wsdl#xpointer(/definitions/binding[@name='TestRequestWSDLBinding'])" xlink:type="simple"/>
     </bindings>
     <services>
