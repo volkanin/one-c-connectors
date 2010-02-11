@@ -73,6 +73,7 @@
     <Compile Include="SimpleLogger.cs" />
     <Compile Include="Test82Adapter.cs" />
     <Compile Include="TestAdapter.cs" />
+    <Compile Include="TestHighLoad.cs" />
     <Compile Include="TestPool.cs" />
     <Compile Include="V81Adapter.cs" />
     <Compile Include="V82Adapter.cs" />
