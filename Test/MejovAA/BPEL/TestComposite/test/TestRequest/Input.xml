@@ -4,7 +4,7 @@
       <_connectionName>Test81</_connectionName>
       <_userName>PoolUserName</_userName>
       <_password>PoolPassword</_password>
-      <_request>ВЫБРАТЬ 1</_request>
+      <_request>ВЫБРАТЬ Ссылка КАК Товар ИЗ Справочник.Номенклатура ГДЕ Код=1</_request>      
     </tes:TestRequest>
   </soapenv:Body>
 </soapenv:Envelope>
