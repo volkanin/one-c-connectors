@@ -73,7 +73,10 @@ namespace OneCService2
 				throw new Exception("Connection must contain attribute Name");
 			}
 			if (_Parameters.ContainsKey("File")) {
+				string _tempCurentDirectory = System.IO.Directory.GetCurrentDirectory();
+				System.IO.Directory.SetCurrentDirectory(OneCService2.GetBinPath());
 				DirectoryInfo _connectionDir = new DirectoryInfo(_Parameters["File"]);
+				System.IO.Directory.SetCurrentDirectory(_tempCurentDirectory);
 				if (!_connectionDir.Exists) {
 					throw new Exception("Directory "+_connectionDir.FullName+" does not exist");	
 				}
