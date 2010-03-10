@@ -68,7 +68,7 @@ namespace OneCService2
 		// add support for ralaitive part and 
 		// TODO check the COM.Connector params definitions
 		private void CheckConnection(Dictionary<string, string> _Parameters) {
-			if (_Parameters.ContainsKey("Name"))
+			if (!_Parameters.ContainsKey("Name"))
 			{
 				throw new Exception("Connection must contain attribute Name");
 			}
