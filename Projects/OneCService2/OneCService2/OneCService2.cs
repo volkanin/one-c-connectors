@@ -21,6 +21,13 @@ namespace OneCService2
 	{
 		public const string MyServiceName = "OneCService2";
 		
+		public static string GetBinPath(){
+			System.Reflection.Assembly ass = System.Reflection.Assembly.GetExecutingAssembly();
+        	string codeBase = System.IO.Path.GetDirectoryName(ass.CodeBase);
+        	System.Uri uri = new Uri(codeBase);
+        	return uri.LocalPath;
+		}
+		
 		private ServiceHost serviceHost = null;
 		
 		public OneCService2()
@@ -40,13 +47,15 @@ namespace OneCService2
 				
 		protected override void OnStart(string[] args)
 		{		
-			SimpleLogger.CreateDefaultLogger(@"D:\out.log");
+			SimpleLogger.CreateDefaultLogger(OneCService2.GetBinPath()+@"\out.log");
 			try
 			{
 				string host = Config.ServiceConfig.Host;
 				int port = Config.ServiceConfig.Port;				
 				SimpleLogger.DefaultLogger.Info("Starting OneCService2: host="+host+" port="+port);
 				SimpleLogger.DefaultLogger.Info("Working directory: "+new System.IO.DirectoryInfo(".").FullName);
+				SimpleLogger.DefaultLogger.Info("Bin directory: "+OneCService2.GetBinPath());
+				
 				ConnectionPool.PoolsPrepare(SimpleLogger.DefaultLogger);								
 				ConnectionPool.PoolsInit(SimpleLogger.DefaultLogger);
 				
