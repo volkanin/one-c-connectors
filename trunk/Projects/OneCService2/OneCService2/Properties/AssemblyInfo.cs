@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("OneCService2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Provides many features for 1C Enterprise 8.1 (8.2)")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OneCService Group")]
 [assembly: AssemblyProduct("OneCService2")]
 [assembly: AssemblyCopyright("Copyright 2010")]
 [assembly: AssemblyTrademark("")]

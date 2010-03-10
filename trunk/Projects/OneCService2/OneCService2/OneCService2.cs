@@ -46,7 +46,7 @@ namespace OneCService2
 				string host = Config.ServiceConfig.Host;
 				int port = Config.ServiceConfig.Port;				
 				SimpleLogger.DefaultLogger.Info("Starting OneCService2: host="+host+" port="+port);
-				
+				SimpleLogger.DefaultLogger.Info("Working directory: "+new System.IO.DirectoryInfo(".").FullName);
 				ConnectionPool.PoolsPrepare(SimpleLogger.DefaultLogger);								
 				ConnectionPool.PoolsInit(SimpleLogger.DefaultLogger);
 				
