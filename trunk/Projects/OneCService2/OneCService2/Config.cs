@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Xml;
+using System.IO;
 
 namespace OneCService2
 {
@@ -57,18 +58,29 @@ namespace OneCService2
             	{
             		connection.Parameters.Add(attr.Name, attr.Value);
             	}            	                
-            	
-            	if (connection.Parameters.ContainsKey("Name"))
-            	{
-            		connections.Add(connection.Parameters["Name"], connection);
-            	}
-            	else
-            	{
-            		throw new Exception("Connection must contain attribute Name");
-            	}
+            	CheckConnection(connection.Parameters);
+            	connections.Add(connection.Parameters["Name"], connection);
             }
             return connections;            
         }
+		
+		// throw Exceptions if there is not correct params
+		// add support for ralaitive part and 
+		// TODO check the COM.Connector params definitions
+		private void CheckConnection(Dictionary<string, string> _Parameters) {
+			if (_Parameters.ContainsKey("Name"))
+			{
+				throw new Exception("Connection must contain attribute Name");
+			}
+			if (_Parameters.ContainsKey("File")) {
+				DirectoryInfo _connectionDir = new DirectoryInfo(_Parameters["File"]);
+				if (!_connectionDir.Exists) {
+					throw new Exception("Directory "+_connectionDir.FullName+" does not exist");	
+				}
+				_Parameters["File"] = _connectionDir.FullName; // поддержка относительных путей
+			}
+		}
+			
 	}
 	
 	public class Config
