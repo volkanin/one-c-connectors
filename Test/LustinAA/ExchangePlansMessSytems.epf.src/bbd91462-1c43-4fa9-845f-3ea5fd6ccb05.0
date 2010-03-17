@@ -1,0 +1,14 @@
+﻿<?xml version="1.0"?>
+<adapters>
+    <adapter type="ActiveMQAdapter">
+        <param type="send" name="ActiveMQConnectionString" value="tcp://localhost:61616"/>
+        <param type="send" name="ReceiveDestinationName" value="queue/first"/>
+        <param type="send" name="SendDestinationName" value="queue/second"/>
+    </adapter>
+    <adapter type="MSMQAdapter">
+        
+    </adapter>
+    <adapter type="JabberAdapter">
+        
+    </adapter>
+</adapters>
