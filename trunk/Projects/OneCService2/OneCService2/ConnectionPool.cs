@@ -110,6 +110,8 @@ namespace OneCService2
 		public static readonly string PoolUserNameParam = "PoolUserName";
 		public static readonly string PoolPasswordParam = "PoolPassword";
 		
+		public static readonly int  waitQueueSleepDelay = 1000;
+		
 		private Dictionary<string, string> parameters = 
 											new Dictionary<string, string>();
 		private Dictionary<Guid, PoolableConnection> connections = 
@@ -276,6 +278,8 @@ namespace OneCService2
 									waitQueue.Dequeue().Set();								
 								}
 							}
+						} else {
+							Thread.Sleep(waitQueueSleepDelay);
 						}
 					}
 				}				
