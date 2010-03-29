@@ -13,3 +13,4 @@
 
   * *Nullsoft Install System* - http://nsis.sourceforge.net/Main_Page
   ** с плагином управления службами  http://nsis.sourceforge.net/NSIS_Simple_Service_Plugin
+  ** с установленным в системе TortoiseSVN - необходим SubWCRevCOM.exe = COM для работы с репозитарием SVN из скриптов VBS
