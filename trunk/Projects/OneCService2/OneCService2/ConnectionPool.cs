@@ -16,6 +16,18 @@ namespace OneCService2
 	{
 		private AbstractAdapter adapter = null;
 		private bool             isFree = true;
+		private int        usingCounter = 0;				
+		
+		public void incUsingCounter()
+		{
+			usingCounter++;
+		}
+		
+		public int UsingCounter
+		{
+			get {return usingCounter;}
+			set {usingCounter = value;}
+		}
 		
 		public AbstractAdapter Adapter
 		{
@@ -313,6 +325,14 @@ namespace OneCService2
 					{
 						pc.Lock();
 					}
+					if (pc.UsingCounter > 10)
+					{						
+						logger.Info("Recreate connection: "+Name);
+						pc.Adapter.Done();
+						pc.Adapter.Init();
+						pc.UsingCounter = 0;
+					}
+					pc.incUsingCounter();
 					return pc.Adapter;
 				}
 			}			

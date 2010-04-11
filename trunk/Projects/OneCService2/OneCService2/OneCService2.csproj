@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractAdapter.cs" />
+    <Compile Include="DataHelper.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ConnectionPool.cs" />
     <Compile Include="ConsoleLogger.cs" />

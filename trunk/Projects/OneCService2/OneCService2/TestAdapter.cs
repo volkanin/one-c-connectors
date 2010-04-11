@@ -52,6 +52,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestAdapterLifeCycle()
 		{			
 			V81Adapter adapter = new V81Adapter();
@@ -73,6 +74,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestTypes()
 		{
 			V81Adapter adapter = new V81Adapter();
@@ -118,6 +120,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestSerialize()
 		{			
 			V81Adapter adapter = new V81Adapter();
@@ -160,6 +163,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestTypeCheck()
 		{
 			//Определение типов
@@ -175,6 +179,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestSimpleDeSerialize()
 		{			
 			//Примитивные типы
@@ -192,6 +197,7 @@ namespace OneCService2
 		}
 		
 		[Test]
+		[Ignore]
 		public void TestComplexDeSerialize()
 		{
 			V81Adapter adapter = new V81Adapter();
@@ -252,6 +258,7 @@ namespace OneCService2
 		
 		
 		[Test]
+		[Ignore]
 		public void TestExternalXSD()
 		{
 			V81Adapter adapter = new V81Adapter();
@@ -283,6 +290,28 @@ namespace OneCService2
 				Assert.IsNotNull(o);
 				Assert.AreEqual(o, "1");
 				
+			}
+			finally
+			{
+				adapter.Done();
+			}
+		}
+		
+		[Test]
+		public void TestGlobalChanges()
+		{
+			V81Adapter adapter = new V81Adapter();
+			adapter.Logger = new ConsoleLogger();
+			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
+			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test");
+			adapter.Parameters.Add(V81Adapter.UserNameParam, "");
+			adapter.Parameters.Add(V81Adapter.PasswordParam, "");
+			
+			adapter.Init();
+			try
+			{
+				ResultSet r = adapter.ExecuteScript("результат=5+2;");				
+				Assert.IsTrue(r.Rows[0].Values[0].Value.Equals("7"));
 			}
 			finally
 			{

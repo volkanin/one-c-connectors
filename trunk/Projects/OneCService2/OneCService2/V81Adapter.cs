@@ -8,6 +8,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Xml;
 
@@ -29,15 +30,7 @@ namespace OneCService2
 		private string   fileConnectionStringTemplate = "File=${File}; Usr=${UserName}; Pwd=${Password}";		
 		private string serverConnectionStringTemplate = "Srvr=${Server}; Ref=${Base}; Usr=${UserName}; Pwd=${Password}";
 		
-		private object comConnector = null;
-		
-		//Для быстрого определения типов
-		private object  stringType = null;
-		private object  doubleType = null;
-		private object    boolType = null;
-		private object    dateType = null;
-		private object   arrayType = null;
-		private object  structType = null;
+		private object comConnector = null;				
 		
 		//Сериализтор
 		private object     xdtoSer = null;
@@ -104,69 +97,13 @@ namespace OneCService2
 		
 		//Подготовка
 		private void Prepare()
-		{
-			object request = Invoke(Connection, "NewObject", new object[] {"Запрос", RequestForGetTypes});
-			object result = Invoke(request, "Выполнить", new object[] {});
-			object row = Invoke(result, "Выбрать", new object[] {});
-			
-			Invoke(row, "Следующий", new object[] {});
-			
-			stringType = Invoke(
-							Invoke(
-									GetProperty(
-											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {0}),
-											"ТипЗначения"
-												), 
-									"Типы", new object[] {}
-								 ),
-							"Получить", new object[] {0}
-							   );
-		
-			doubleType = Invoke(
-							Invoke(
-									GetProperty(
-											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {1}),
-											"ТипЗначения"
-												), 
-									"Типы", new object[] {}
-								 ),
-							"Получить", new object[] {0}
-							   );
-			boolType = Invoke(
-							Invoke(
-									GetProperty(
-											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {2}),
-											"ТипЗначения"
-												), 
-									"Типы", new object[] {}
-								 ),
-							"Получить", new object[] {0}
-							   );						
-			dateType = Invoke(
-							Invoke(
-									GetProperty(
-											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {3}),
-											"ТипЗначения"
-												), 
-									"Типы", new object[] {}
-								 ),
-							"Получить", new object[] {0}
-							   );			
-		
-			
-			ReleaseRCW(row);
-			ReleaseRCW(result);
-			ReleaseRCW(request);
-			
-			arrayType = ExecuteScript(ScriptForGetArrayType);
-			
-			structType = ExecuteScript(ScriptForGetStructType);
-			
+		{			
 			xdtoSer = Invoke(
 							Connection, 
 							"NewObject", 
 							new object[] {"СериализаторXDTO", GetProperty(Connection, "ФабрикаXDTO")}
 							);
+						
 		}				
 		
 		//Получить тип по значению
@@ -192,23 +129,28 @@ namespace OneCService2
 			{
 				return SupportedType.DATE;
 			}
-			else if ((bool)(Invoke(Connection, "OneCService_ПринадлежитТипу", new object[] {_o, arrayType})))
-			{
-				return SupportedType.ARRAY;	
-			}
-			else if ((bool)(Invoke(Connection, "OneCService_ПринадлежитТипу", new object[] {_o, structType})))
-			{
-				return SupportedType.STRUCT;
-			}
 			else
 			{
-				return SupportedType.OBJECT;
-			}
+				string typeName = (string)Invoke(Connection, "OneCService_ПринадлежитСложномуТипу", new object[] {_o});
+				if (typeName.Equals("ARRAY"))
+				{
+					return SupportedType.ARRAY;
+				}
+				else if (typeName.Equals("STRUCT"))
+				{
+					return SupportedType.STRUCT;
+				}
+				else
+				{
+					return SupportedType.OBJECT;
+				}
+			}			
 		}
 		
 		//Получаем объект по ссылке
 		public object GetObjectByRef(object _o)
 		{
+			IntPtr ptr = Marshal.GetIUnknownForObject(_o);
 			object o1 = null;
 			try
 			{
@@ -221,22 +163,34 @@ namespace OneCService2
 			}
 			else 
 			{
-				return _o;
+				return Marshal.GetObjectForIUnknown(ptr);
 			}			
 		}
 		
 		public override XmlNode Serialize(object _o)
 		{
 			XmlNode resultNode = null;			
-			
 			Object o = GetObjectByRef(_o);
-			
 			SupportedType type = GetTypeForValue(o);
+			
+			//!!!!!!!!!!!!!!			
+			/*Object o = _o;
+			IntPtr ptr = Marshal.GetIUnknownForObject(o);
+			
+			SupportedType type = GetTypeForValue(o);			
+									
+			Console.WriteLine("OOO "+o.ToString()+" PTR="+ptr);									
+			
+			o = Marshal.GetObjectForIUnknown(ptr);
+			
+			o = GetObjectByRef(o);*/
+			
+			//!!!!!!!!!!!!!!
 			if (type.Equals(SupportedType.ARRAY))
 			{
 				XmlDocument doc = new XmlDocument();
 				XmlElement arrayElement = doc.CreateElement(OneCServiceArrayElement);
-				doc.AppendChild(arrayElement);
+				doc.AppendChild(arrayElement);				
 				int count = (int)Invoke(o, "Количество", new object[] {});
 				for (int i=0; i<count; i++)
 				{
@@ -291,8 +245,8 @@ namespace OneCService2
 				resultNode = doc.DocumentElement;
 			}
 			else if (type.Equals(SupportedType.OBJECT))
-			{
-				object writeXml = Invoke(Connection, "NewObject", new object[] {"ЗаписьXML"});
+			{				
+				object writeXml = Invoke(Connection, "OneCService_СоздатьЗаписьXML", new object[] {});
 				try
 				{
 					Invoke(writeXml, "УстановитьСтроку", new object[] {});
@@ -351,8 +305,8 @@ namespace OneCService2
 					}
 				}
 				finally
-				{
-					ReleaseRCW(writeXml);
+				{					
+					//ReleaseRCW(writeXml);
 				}
 			}
 			else if (type.Equals(SupportedType.DATE))
@@ -514,9 +468,12 @@ namespace OneCService2
 		}
 		
 		/*Полезные методы*/
-		public override object ExecuteScript(string _script)
+		public override ResultSet ExecuteScript(string _script)
 		{			
-			return Invoke(Connection, "OneCService_ВыполнитьСтроку", new object[] {_script});						    
+			ResultSet resultSet = new ResultSet();
+			DataHelper dataHelper = new DataHelper();
+			Invoke(Connection, "OneCService_ВыполнитьСкрипт", new object[] {_script, resultSet, dataHelper});
+			return resultSet;
 		}		
 		
 		public override ResultSet ExecuteRequest(string _request)

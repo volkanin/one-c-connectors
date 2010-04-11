@@ -12,6 +12,7 @@ using System.Xml.Schema;
 using System.Xml.Serialization;
 using System.ServiceModel;
 using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
 
 namespace OneCService2
 {	
@@ -43,6 +44,8 @@ namespace OneCService2
 	}
 	
 	[DataContract(Namespace="http://OneCService2/types")]
+	[Guid("2B181871-8F21-4B7E-8D93-8C4AFC37E5BF")]
+	[ComVisible(true)]
 	public class Row
 	{
 		private List<XmlNode> values = new List<XmlNode>();		
@@ -50,6 +53,11 @@ namespace OneCService2
 		public List<XmlNode> ValuesList
 		{
 			get {return values;}
+		}
+		
+		public void AddValue(XmlNode _value)
+		{
+			ValuesList.Add(_value);
 		}
 		
 		[DataMember]
@@ -61,6 +69,8 @@ namespace OneCService2
 	}
 	
 	[DataContract(Namespace="http://OneCService2/types")]
+	[Guid("9008747A-1971-45D9-B752-E4B6856B521D")]
+	[ComVisible(true)]
 	public class ResultSet
 	{
 		private List<string> columnNames = new List<string>();
@@ -82,10 +92,20 @@ namespace OneCService2
 			get {return columnNames;}
 		}
 		
+		public void AddColumnName(string _name)
+		{
+			ColumnNames.Add(_name);
+		}
+		
 		[DataMember]
 		public List<string> ColumnTypes
 		{
 			get {return columnTypes;}
+		}
+		
+		public void AddColumnType(string _type)
+		{
+			ColumnTypes.Add(_type);
 		}
 		
 		[DataMember]
@@ -96,6 +116,13 @@ namespace OneCService2
 		
 		public ResultSet()
 		{		
+		}
+		
+		public Row CreateRow()
+		{
+			Row row = new Row();
+			Rows.Add(row);
+			return row;
 		}
 	}
 }
