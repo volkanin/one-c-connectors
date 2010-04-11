@@ -196,26 +196,8 @@ namespace OneCService2
 		
 		/*Полезные методы*/		
 		public abstract ResultSet ExecuteRequest(string _request);
-		
-		public abstract object ExecuteScript(string _script);						
-		public ResultSet ExecuteScriptForResultSet(string _script)
-		{
-			object o = ExecuteScript(_script);
-			if (o == null)
-			{
-				o = "";
-			}
-			ResultSet resultSet = new ResultSet();
-			resultSet.ColumnNames.Add("value");
-			resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
-			
-			Row row = new Row();
-			row.ValuesList.Add(Serialize(o));
-			
-			resultSet.Rows.Add(row);
 				
-			return resultSet;
-		}
+		public abstract ResultSet ExecuteScript(string _script);		
 		
 		public abstract object ExecuteMethod(string _methodName, object[] _parameters);		
 		public ResultSet ExecuteMethodForResultSet(string _methodName, XmlNode[] _parameters)
