@@ -120,7 +120,7 @@ namespace OneCService2
 		}
 		
 		[Test]
-		[Ignore]
+		//[Ignore]
 		public void TestSerialize()
 		{			
 			V81Adapter adapter = new V81Adapter();
@@ -134,27 +134,21 @@ namespace OneCService2
 			try
 			{
 				//Примитив
-				object o = adapter.ExecuteScript("результат=2+3;");
-				XmlNode node = adapter.Serialize(o);
-				Assert.AreEqual(node.Value, "5");
+				ResultSet r = adapter.ExecuteScript("результат=2+3;");				
+				Assert.IsTrue(r.Rows[0].Values[0].Value.Equals("5"));
 				
 				//Объект
-				o = adapter.ExecuteScript("результат=Справочники.Номенклатура.НайтиПоКоду(1);");
-				node = adapter.Serialize(o);
+				r = adapter.ExecuteScript("результат=Справочники.Номенклатура.НайтиПоКоду(1);");				
 				
-				WriteXml(node);
+				WriteXml(r.Rows[0].Values[0]);
 				
 				//Массив
-				o = adapter.ExecuteScript("э=Справочники.Номенклатура.НайтиПоКоду(1); м = Новый Массив(); м.Добавить(э);м.Добавить(э); результат=м;");
-				node = adapter.Serialize(o);
-				
-				WriteXml(node);
+				r = adapter.ExecuteScript("э=Справочники.Номенклатура.НайтиПоКоду(1); м = Новый Массив(); м.Добавить(э);м.Добавить(э); результат=м;");
+				WriteXml(r.Rows[0].Values[0]);								
 				
 				//Структура
-				o = adapter.ExecuteScript("с = Новый Структура(); с.Вставить(\"ЭтоКлюч\", \"ЭтоЗначение\"); с.Вставить(\"ЭтоКлюч1\", \"ЭтоЗначение1\"); результат=с;");
-				node = adapter.Serialize(o);
-				
-				WriteXml(node);
+				r = adapter.ExecuteScript("с = Новый Структура(); с.Вставить(\"ЭтоКлюч\", \"ЭтоЗначение\"); с.Вставить(\"ЭтоКлюч1\", \"ЭтоЗначение1\"); результат=с;");
+				WriteXml(r.Rows[0].Values[0]);								
 			}
 			finally
 			{
@@ -261,7 +255,7 @@ namespace OneCService2
 		[Ignore]
 		public void TestExternalXSD()
 		{
-			V81Adapter adapter = new V81Adapter();
+			/*V81Adapter adapter = new V81Adapter();
 			adapter.Logger = new ConsoleLogger();
 			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
 			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test");
@@ -294,7 +288,7 @@ namespace OneCService2
 			finally
 			{
 				adapter.Done();
-			}
+			}*/
 		}
 		
 		[Test]
@@ -309,9 +303,25 @@ namespace OneCService2
 			
 			adapter.Init();
 			try
-			{
-				ResultSet r = adapter.ExecuteScript("результат=5+2;");				
+			{				
+				ResultSet r = adapter.ExecuteScript("результат=5+2;");
 				Assert.IsTrue(r.Rows[0].Values[0].Value.Equals("7"));
+				
+				r = adapter.ExecuteScript("м = Новый Массив(); м.Добавить(\"ЙЦУКЕН\"); результат = м;");
+				XmlNode arrayNode = r.Rows[0].Values[0];
+				
+				r = adapter.ExecuteRequest("ВЫБРАТЬ 1, \"Й\", Истина, ДатаВремя(1, 1, 1)");
+				Assert.IsTrue(r.ColumnTypes[0].Equals("DOUBLE"));
+				Assert.IsTrue(r.ColumnTypes[1].Equals("STRING"));
+				Assert.IsTrue(r.ColumnTypes[2].Equals("BOOLEAN"));
+				Assert.IsTrue(r.ColumnTypes[3].Equals("DATE"));
+				
+				r = adapter.ExecuteMethod("OneCService2_ТестовыйМетод", new XmlNode[] {r.Rows[0].Values[0], r.Rows[0].Values[1]});
+				Assert.IsTrue(r.Rows[0].Values[0].Value.Equals("1|Й"));
+				
+				r = adapter.ExecuteMethod("OneCService2_ТестовыйМетод2", new XmlNode[] {r.Rows[0].Values[0], arrayNode});
+				Console.WriteLine(r.Rows[0].Values[0].Value);
+				Assert.IsTrue(r.Rows[0].Values[0].Value.Equals("1|Й|ЙЦУКЕН"));
 			}
 			finally
 			{

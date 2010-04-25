@@ -40,37 +40,24 @@ namespace OneCService2
 				
 				int loopCount = 10000;
 			
+				AbstractAdapter adapter = pool.GetConnection("PoolUserName", "PoolPassword");					
 				for (int i=0; i<loopCount; i++)
 				{
-					AbstractAdapter adapter = pool.GetConnection("PoolUserName", "PoolPassword");					
+					
 					try
-					{
-						//ResultSet r = adapter.ExecuteRequest("ВЫБРАТЬ Ссылка ИЗ Справочник.Номенклатура");
-						//Assert.AreEqual(r.Error, "");
-						//Assert.IsTrue(r.Rows.Count>0);
-						
-						XmlNode node = adapter.Serialize(1);
-						object o = adapter.DeSerialize(node);
-						Assert.AreEqual(o, 1);
-						
-						o = adapter.ExecuteScript(
-								/*"с = Новый Структура(); с.Вставить(\"A\", Справочники.Номенклатура.НайтиПоКоду(1)); с.Вставить(\"B\", 2); результат=с;"*/
-								/*"м = Новый Массив(); м.Добавить(Справочники.Номенклатура.НайтиПоКоду(1)); результат = м;"*/
-								"результат = Справочники.Номенклатура.НайтиПоКоду(1);"								
-										 );
-						node = adapter.Serialize(o);				
-						//o = adapter.DeSerialize(node);
-						//Assert.NotNull(o);
-																		
+					{												
+						ResultSet r = adapter.ExecuteScript(
+								"с = Новый Структура(); с.Вставить(\"A\", Справочники.Номенклатура.НайтиПоКоду(1)); с.Вставить(\"B\", 2); результат=с;"								
+										 				 );																		
 						Console.WriteLine("Loop: "+i);
 						Thread.Sleep(50);
 					}
 					finally
-					{
-						pool.ReleaseConnection(adapter);
+					{						
 					}
 					
 				}
+				pool.ReleaseConnection(adapter);
 			}
 			finally
 			{

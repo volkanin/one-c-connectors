@@ -189,7 +189,7 @@ namespace OneCService2
 		[Test]
 		public void TestExternalXSD()
 		{
-			V82Adapter adapter = new V82Adapter();
+			/*V82Adapter adapter = new V82Adapter();
 			adapter.Logger = new ConsoleLogger();
 			adapter.Parameters.Add(V81Adapter.ModeParam, "File");
 			adapter.Parameters.Add(V81Adapter.FileParam, @"C:\Work\1C\Test82");
@@ -222,7 +222,7 @@ namespace OneCService2
 			finally
 			{
 				adapter.Done();
-			}
+			}*/
 		}
 	}
 }

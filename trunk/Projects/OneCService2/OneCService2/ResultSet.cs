@@ -55,9 +55,25 @@ namespace OneCService2
 			get {return values;}
 		}
 		
-		public void AddValue(XmlNode _value)
+		public void AddValue(XmlNode _value, DataHelper _dataHelper)
 		{
-			ValuesList.Add(_value);
+			if (_value.NodeType.Equals(XmlNodeType.Element))
+			{
+				if (_value.LocalName.Equals(_dataHelper.GetRemoveThisElementName()))
+				{
+					string currentValue = _value.ChildNodes[0].Value;
+					ValuesList.Add(_dataHelper.XmlNodeFromSimple(currentValue));
+				}
+				else
+				{
+					ValuesList.Add(_value);
+				}
+			}
+			else
+			{
+				ValuesList.Add(_value);
+			}
+			
 		}
 		
 		[DataMember]
