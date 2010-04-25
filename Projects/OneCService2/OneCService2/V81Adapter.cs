@@ -469,94 +469,30 @@ namespace OneCService2
 		
 		/*Полезные методы*/
 		public override ResultSet ExecuteScript(string _script)
-		{			
+		{	
+			RestoreConnectionRCW();
 			ResultSet resultSet = new ResultSet();
 			DataHelper dataHelper = new DataHelper();
-			Invoke(Connection, "OneCService_ВыполнитьСкрипт", new object[] {_script, resultSet, dataHelper});
+			Invoke(Connection, "OneCService2_ВыполнитьСкрипт", new object[] {_script, resultSet, dataHelper});
 			return resultSet;
 		}		
 		
 		public override ResultSet ExecuteRequest(string _request)
 		{
-			RestoreConnectionRCW();
-			
-			object request = Invoke(Connection, "NewObject", new object[] {"Запрос", _request});
-			object result = Invoke(request, "Выполнить", new object[] {});
-			try
-			{
-				ResultSet resultSet = new ResultSet();
-				if ((bool)Invoke(result, "Пустой", new object[] {}))
-				{
-					return resultSet;
-				}
-				else
-				{
-					object row = Invoke(result, "Выбрать", new object[] {});
-					try
-					{
-						int columnCount = (int)Invoke(
-												GetProperty(result, "Колонки"), "Количество", new object[] {}
-													 );
-						/*Заполним названия колонок*/
-						for (int i=0; i<columnCount; i++)
-						{
-							string columnName = 
-									(string)GetProperty(
-											Invoke(GetProperty(result, "Колонки"), "Получить", new object[] {i}), 
-											"Имя"
-							  		  				  );
-							resultSet.ColumnNames.Add(columnName);							
-						}
-						/*Заполним данные и типы*/
-						while ((bool)Invoke(row, "Следующий", new object[] {}))
-						{
-							Row newRow = new Row();
-							for (int i=0; i<columnCount; i++)
-							{
-								object o = Invoke(row, "Получить", new object[] {i});
-								try
-								{
-									/*Добавим информацию о типе если нужно и есть возможность*/
-									if ((resultSet.ColumnTypes.Count<(i+1)) && (o != null))
-									{
-										resultSet.ColumnTypes.Add(GetTypeForValue(o).ToString());
-									}
-									if (o == null)
-									{
-										newRow.ValuesList.Add(Serialize(""));
-									}
-									else
-									{
-										newRow.ValuesList.Add(Serialize(o));
-									}
-								}
-								finally
-								{
-									ReleaseRCW(o);
-								}
-							}
-							
-							resultSet.Rows.Add(newRow);
-						}
-						
-						return resultSet;
-					}
-					finally
-					{
-						ReleaseRCW(row);
-					}
-				}
-			}
-			finally
-			{				
-				ReleaseRCW(result);
-				ReleaseRCW(request);
-			}						
+			RestoreConnectionRCW();			
+			ResultSet resultSet = new ResultSet();
+			DataHelper dataHelper = new DataHelper();
+			Invoke(Connection, "OneCService2_ВыполнитьЗапрос", new object[] {_request, resultSet, dataHelper});
+			return resultSet;					
 		}
 		
-		public override object ExecuteMethod(string _methodName, object[] _parameters)
+		public override ResultSet ExecuteMethod(string _methodName, XmlNode[] _parameters)
 		{
-			return Invoke(Connection, _methodName, _parameters);
+			RestoreConnectionRCW();			
+			ResultSet resultSet = new ResultSet();
+			DataHelper dataHelper = new DataHelper();
+			Invoke(Connection, "OneCService2_ВыполнитьМетод", new object[] {_methodName, _parameters, resultSet, dataHelper});
+			return resultSet;			
 		}
 	}
 }

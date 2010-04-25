@@ -199,10 +199,10 @@ namespace OneCService2
 				
 		public abstract ResultSet ExecuteScript(string _script);		
 		
-		public abstract object ExecuteMethod(string _methodName, object[] _parameters);		
+		public abstract ResultSet ExecuteMethod(string _methodName, XmlNode[] _parameters);		
 		public ResultSet ExecuteMethodForResultSet(string _methodName, XmlNode[] _parameters)
 		{
-			if (_parameters == null)
+			/*if (_parameters == null)
 			{
 				_parameters = new XmlNode[]{};
 			}
@@ -227,7 +227,8 @@ namespace OneCService2
 			
 			resultSet.Rows.Add(row);
 				
-			return resultSet;						
+			return resultSet;	*/
+			return null;
 		}
 		
 		public void Dispose()
