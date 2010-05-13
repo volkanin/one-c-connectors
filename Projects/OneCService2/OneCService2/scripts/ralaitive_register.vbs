@@ -1,13 +1,11 @@
 'Sc.exe create OneCService2Lst binpath= D:\work\external\one-s-connectors\trunk\Projects\OneCService2\OneCService2\bin\Debug\OneCService2.exe'
 
-strDir = "..\bin"
-runConfiguration = "\Debug" 
 Set FSO = CreateObject("Scripting.FileSystemObject")
 Set oShell = WScript.CreateObject ("WScript.Shell")
 
-fullPath =  strDir & runConfiguration
-WScript.StdOut.WriteLine "ralaitivePath: " & fullPath
-Set objDir = FSO.GetFolder(fullPath)
+path =  "..\"
+WScript.StdOut.WriteLine "ralaitivePath: " & path
+Set objDir = FSO.GetFolder(path)
 WScript.StdOut.WriteLine "fullPath: " & objDir
 
 Set oShell = WScript.CreateObject ("WScript.Shell")

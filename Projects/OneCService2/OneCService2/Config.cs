@@ -67,20 +67,23 @@ namespace OneCService2
 		// throw Exceptions if there is not correct params
 		// add support for ralaitive part and 
 		// TODO check the COM.Connector params definitions
-		private void CheckConnection(Dictionary<string, string> _Parameters) {
-			if (!_Parameters.ContainsKey("Name"))
+		private void CheckConnection(Dictionary<string, string> _parameters) 
+		{
+			if (!_parameters.ContainsKey("Name"))
 			{
 				throw new Exception("Connection must contain attribute Name");
 			}
-			if (_Parameters.ContainsKey("File")) {
+			if (_parameters.ContainsKey("File")) 
+			{
 				string _tempCurentDirectory = System.IO.Directory.GetCurrentDirectory();
 				System.IO.Directory.SetCurrentDirectory(OneCService2.GetBinPath());
-				DirectoryInfo _connectionDir = new DirectoryInfo(_Parameters["File"]);
+				DirectoryInfo _connectionDir = new DirectoryInfo(_parameters["File"]);
 				System.IO.Directory.SetCurrentDirectory(_tempCurentDirectory);
-				if (!_connectionDir.Exists) {
-					throw new Exception("Directory "+_connectionDir.FullName+" does not exist");	
+				if (!_connectionDir.Exists) 
+				{
+					throw new Exception("Directory "+_connectionDir.FullName+" does not exist");					
 				}
-				_Parameters["File"] = _connectionDir.FullName; // поддержка относительных путей
+				_parameters["File"] = _connectionDir.FullName; // поддержка относительных путей
 			}
 		}
 			
@@ -110,7 +113,7 @@ namespace OneCService2
 				if (connections == null)
 				{
 					connections = (Dictionary<string, Connection>)ConfigurationSettings.GetConfig("Connections");
-				}
+				}				
 				return connections;
 			}
 		}

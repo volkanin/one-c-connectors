@@ -21,7 +21,8 @@ namespace OneCService2
 	{
 		public const string MyServiceName = "OneCService2";
 		
-		public static string GetBinPath(){
+		public static string GetBinPath()
+		{
 			System.Reflection.Assembly ass = System.Reflection.Assembly.GetExecutingAssembly();
         	string codeBase = System.IO.Path.GetDirectoryName(ass.CodeBase);
         	System.Uri uri = new Uri(codeBase);

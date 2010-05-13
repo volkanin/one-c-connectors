@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("OneCService2")]
 [assembly: AssemblyDescription("Provides many features for 1C Enterprise 8.1 (8.2)")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OneCService Group")]
+[assembly: AssemblyCompany("OneCConectors")]
 [assembly: AssemblyProduct("OneCService2")]
 [assembly: AssemblyCopyright("Copyright 2010")]
 [assembly: AssemblyTrademark("")]
