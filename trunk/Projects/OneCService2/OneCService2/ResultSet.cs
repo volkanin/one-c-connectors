@@ -16,6 +16,26 @@ using System.Runtime.InteropServices;
 
 namespace OneCService2
 {	
+	[DataContract(Namespace="http://OneCService2/types")]
+	[Guid("DF847E1B-8263-461F-9626-9C1F9F591360")]
+	[ComVisible(true)]
+	public class Parameters
+	{
+		private List<XmlNode> paramsList = new List<XmlNode>();
+		
+		public void AddParameter(XmlNode _p)
+		{
+			paramsList.Add(_p);
+		}
+		
+		[DataMember]
+		public XmlNode[] Params
+		{
+			get {return paramsList.ToArray();}
+			set {paramsList = new List<XmlNode>(value);}
+		}
+	}
+	
 	public class Value : IXmlSerializable
 	{
 		private XmlNode anyElement;

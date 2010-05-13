@@ -7,6 +7,7 @@
  */
 using System;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Xml;
 
@@ -32,12 +33,10 @@ namespace OneCService2
 							    				 )
 		{			
 			try
-			{
+			{				
 				if (ConnectionPool.Pools.ContainsKey(_connectionName))
-				{
-					SimpleLogger.DefaultLogger.Info("QQQQ");
+				{							
 					AbstractAdapter adapter = ConnectionPool.Pools[_connectionName].GetConnection(_poolUserName, _poolPassword);
-					SimpleLogger.DefaultLogger.Info("WWWW");
 					try
 					{
 						return adapter.ExecuteRequest(_request);						
@@ -69,19 +68,69 @@ namespace OneCService2
 												string _script
 							   					)
 		{
-			return null;
+			try
+			{				
+				if (ConnectionPool.Pools.ContainsKey(_connectionName))
+				{							
+					AbstractAdapter adapter = ConnectionPool.Pools[_connectionName].GetConnection(_poolUserName, _poolPassword);
+					try
+					{
+						return adapter.ExecuteScript(_script);						
+					}
+					finally
+					{
+						ConnectionPool.Pools[_connectionName].ReleaseConnection(adapter);
+					}
+				}
+				else
+				{
+					throw new Exception("Connection with name '"+_connectionName+"' not found");
+				}
+			}
+			catch (Exception _e)
+			{
+				SimpleLogger.DefaultLogger.Severe("Exception in ExecuteRequest: "+_e.ToString());
+				ResultSet resultSet = new ResultSet();
+				resultSet.Error = _e.ToString();
+				return resultSet;
+			}
 		}
 		
 		
 		ResultSet IOneCWebService2.ExecuteMethod(
-												string _connectionName, 
-												string _poolUserName, 
-												string _poolPassword, 
-												string _methodName,
-												XmlNode[] _parameters
+												string     _connectionName, 
+												string     _poolUserName, 
+												string     _poolPassword, 
+												string     _methodName,
+												Parameters _parameters
 							   					)
 		{
-			return null;
+			try
+			{				
+				if (ConnectionPool.Pools.ContainsKey(_connectionName))
+				{							
+					AbstractAdapter adapter = ConnectionPool.Pools[_connectionName].GetConnection(_poolUserName, _poolPassword);
+					try
+					{
+						return adapter.ExecuteMethod(_methodName, _parameters.Params);						
+					}
+					finally
+					{
+						ConnectionPool.Pools[_connectionName].ReleaseConnection(adapter);
+					}
+				}
+				else
+				{
+					throw new Exception("Connection with name '"+_connectionName+"' not found");
+				}
+			}
+			catch (Exception _e)
+			{
+				SimpleLogger.DefaultLogger.Severe("Exception in ExecuteRequest: "+_e.ToString());
+				ResultSet resultSet = new ResultSet();
+				resultSet.Error = _e.ToString();
+				return resultSet;
+			}
 		}
 		
 		public static ServiceHost CreateServiceHost(string _hostName, int _port)
@@ -89,11 +138,12 @@ namespace OneCService2
 			Uri uri = new Uri("http://"+_hostName+":"+_port+"/OneCService2");
 			ServiceHost serviceHost = new ServiceHost(typeof(OneCWebService2), uri);						
 			
-			WSHttpBinding binding = new WSHttpBinding();
+			BasicHttpBinding binding = new BasicHttpBinding();
+			//WSHttpBinding binding = new WSHttpBinding();
 			binding.Namespace = "http://OneCService2";		
-			binding.Security.Mode = SecurityMode.None;	
-			binding.MaxBufferPoolSize = 1000*1000;
-			binding.MaxReceivedMessageSize = 1000*1000;			
+			//binding.Security.Mode = SecurityMode.None;	
+			binding.MaxBufferPoolSize = 10*1000*1000;
+			binding.MaxReceivedMessageSize = 10*1000*1000;
 			
 			ServiceMetadataBehavior b = serviceHost.Description.Behaviors.Find<ServiceMetadataBehavior>();			
 			

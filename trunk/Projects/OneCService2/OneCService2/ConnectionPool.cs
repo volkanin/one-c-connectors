@@ -325,7 +325,7 @@ namespace OneCService2
 					{
 						pc.Lock();
 					}
-					if (pc.UsingCounter > 10)
+					if (pc.UsingCounter > 30)
 					{						
 						logger.Info("Recreate connection: "+Name);
 						pc.Adapter.Done();

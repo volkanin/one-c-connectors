@@ -38,11 +38,12 @@ namespace OneCService2
 			{
 				pool.Init();
 				
-				int loopCount = 10000;
-			
-				AbstractAdapter adapter = pool.GetConnection("PoolUserName", "PoolPassword");					
+				int loopCount = 1000000;
+							
 				for (int i=0; i<loopCount; i++)
 				{
+					
+					AbstractAdapter adapter = pool.GetConnection("PoolUserName", "PoolPassword");
 					
 					try
 					{												
@@ -53,11 +54,11 @@ namespace OneCService2
 						Thread.Sleep(50);
 					}
 					finally
-					{						
+					{		
+						pool.ReleaseConnection(adapter);
 					}
 					
-				}
-				pool.ReleaseConnection(adapter);
+				}				
 			}
 			finally
 			{

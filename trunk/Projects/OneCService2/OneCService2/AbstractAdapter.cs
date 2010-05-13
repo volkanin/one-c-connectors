@@ -49,7 +49,7 @@ namespace OneCService2
 		public ILogger Logger
 		{
 			set {logger = value;}
-			get {
+			get {				
 					if (logger == null)
 					{
 						logger = SimpleLogger.DefaultLogger;
@@ -68,6 +68,11 @@ namespace OneCService2
 			get {return connection;}
 		}				
 		
+		protected IntPtr ConnectionPtr
+		{
+			get {return connectionPtr;}
+		}
+		
 		protected object CreateInstanceByProgId(string _progId)
 		{
 			Type type = Type.GetTypeFromProgID(_progId);
@@ -77,9 +82,16 @@ namespace OneCService2
 		protected void ReleaseRCW(object _o)
 		{
 			try
-			{
-				Marshal.Release(Marshal.GetIDispatchForObject(_o));
-				Marshal.ReleaseComObject(_o);
+			{			
+				if (_o is IntPtr)
+				{
+					Marshal.Release((IntPtr)_o);
+				}
+				else
+				{
+					Marshal.Release(Marshal.GetIDispatchForObject(_o));
+					Marshal.ReleaseComObject(_o);
+				}
 			}
 			catch (Exception _e)
 			{			
@@ -155,44 +167,7 @@ namespace OneCService2
 
 		/*Управление жизненным циклом*/
 		public abstract void Init();		
-		public abstract void Done();
-		
-		/*Работа с типами*/				
-		public abstract XmlNode Serialize(object _o);
-		public abstract object DeSerialize(XmlNode _node);	
-		public abstract SupportedType GetTypeForValue(object _o);				
-		
-		public static bool isDouble(string _s)
-		{
-			return (isDoubleRegex.IsMatch(_s.Trim().Replace(',','.'))) && (_s.Replace(',','.').Contains("."));
-		}
-		
-		public static bool isInt(string _s)
-		{
-			return (isDoubleRegex.IsMatch(_s.Trim())) && (!_s.Contains("."));
-		}
-		
-		public static bool isBool(string _s)
-		{
-			return isBoolRegex.IsMatch(_s.Trim().ToLower());
-		}
-		
-		public static bool isDate(string _s)
-		{
-			try
-			{
-				DateTime.ParseExact(
-								_s, 
-								"yyyy-MM-dd'T'HH:mm:ss.fffffffZ", 
-								new CultureInfo("en-US", true)
-								  );
-				return true;
-			}
-			catch (Exception _e)
-			{
-				return false;
-			}
-		}
+		public abstract void Done();				
 		
 		/*Полезные методы*/		
 		public abstract ResultSet ExecuteRequest(string _request);
@@ -200,36 +175,6 @@ namespace OneCService2
 		public abstract ResultSet ExecuteScript(string _script);		
 		
 		public abstract ResultSet ExecuteMethod(string _methodName, XmlNode[] _parameters);		
-		public ResultSet ExecuteMethodForResultSet(string _methodName, XmlNode[] _parameters)
-		{
-			/*if (_parameters == null)
-			{
-				_parameters = new XmlNode[]{};
-			}
-			object[] objectParams = new object[_parameters.Length];
-			for (int i=0; i<_parameters.Length; i++)
-			{
-				objectParams[i] = DeSerialize(_parameters[i]);
-			}
-			object result = ExecuteMethod(_methodName, objectParams);
-			if (result == null)
-			{
-				result = "";
-			}
-			
-			ResultSet resultSet = new ResultSet();
-			resultSet.ColumnNames.Add("value");
-			resultSet.ColumnTypes.Add(GetTypeForValue(result).ToString());
-			
-			Row row = new Row();
-						
-			row.ValuesList.Add(Serialize(result));
-			
-			resultSet.Rows.Add(row);
-				
-			return resultSet;	*/
-			return null;
-		}
 		
 		public void Dispose()
 		{

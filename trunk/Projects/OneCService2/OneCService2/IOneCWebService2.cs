@@ -36,7 +36,7 @@ namespace OneCService2
 								string _poolUserName, 
 								string _poolPassword, 
 								string _methodName,
-								XmlNode[] _parameters
+								Parameters _parameters
 							   );		
 	}
 }

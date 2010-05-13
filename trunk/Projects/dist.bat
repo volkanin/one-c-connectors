@@ -1,26 +1,21 @@
-@echo off
-set curdir= .\%1
-
-echo current dir is =%curdir%=
-
-mkdir %curdir%\..\Dist
+mkdir ..\Dist
 
 rem *************************** MOMAdapters *********************************
 
-mkdir %curdir%\..\Dist\MOMAdapters
+mkdir ..\Dist\MOMAdapters
 
-copy %curdir%\.\MOMAdapters\MOMAdapters\reg\*.bat %curdir%\..\Dist\MOMAdapters
+copy .\MOMAdapters\MOMAdapters\reg\*.bat ..\Dist\MOMAdapters
 
-copy %curdir%\.\MOMAdapters\MOMAdapters\bin\Debug\* %curdir%\..\Dist\MOMAdapters
-copy %curdir%\.\MOMAdapters\MOMAdapters\bin\Release\* %curdir%\..\Dist\MOMAdapters
+copy .\MOMAdapters\MOMAdapters\bin\Debug\* ..\Dist\MOMAdapters
+copy .\MOMAdapters\MOMAdapters\bin\Release\* ..\Dist\MOMAdapters
 
 
 rem *************************** OneCService2 ********************************
 
-mkdir %curdir%\..\Dist\OneCService2
-mkdir %curdir%\..\Dist\OneCService2\scripts
+mkdir ..\Dist\OneCService2
+mkdir ..\Dist\OneCService2\scripts
 
-copy %curdir%\.\OneCService2\OneCService2\scripts\* %curdir%\..\Dist\OneCService2\scripts
+copy .\OneCService2\OneCService2\scripts\* ..\Dist\OneCService2\scripts
 
-copy %curdir%\.\OneCService2\OneCService2\bin\Debug\* %curdir%\..\Dist\OneCService2
-copy %curdir%\.\OneCService2\OneCService2\bin\Release\* %curdir%\..\Dist\OneCService2
+copy .\OneCService2\OneCService2\bin\Debug\* ..\Dist\OneCService2
+copy .\OneCService2\OneCService2\bin\Release\* ..\Dist\OneCService2
